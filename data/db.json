@@ -4,39 +4,15 @@
       "id": 1,
       "username": "svcode_npms",
       "name": "SVCODE Admin",
-      "passwordHash": "170437ebd1e05eefaba2bf95e8bf35603ef5a4af87daac83600221fe321c653d"
+      "passwordHash": "170437ebd1e05eefaba2bf95e8bf35603ef5a4af87daac83600221fe321c653d",
+      "role": "admin"
     }
   ],
   "sessions": [
     {
-      "token": "22d9408ba39b972abcdc3d162e1fffc94ff65478568893a3",
+      "token": "51aaa889fb1eb7a29e2443e8a8f3b349b47a5dcacad1b733",
       "user": "svcode_npms",
-      "exp": 1785142946806
-    },
-    {
-      "token": "5670276f5af80a44064f82d8f04919acdb36ad703b6c1769",
-      "user": "svcode_npms",
-      "exp": 1785142946917
-    },
-    {
-      "token": "4f9344dfa6557653bee55c0ab0f2dbf982f7d3c15a19ab1e",
-      "user": "svcode_npms",
-      "exp": 1785142957129
-    },
-    {
-      "token": "c484965ceb14ee9131c0989c1281db5cc8fe081fd90bb8ae",
-      "user": "svcode_npms",
-      "exp": 1785146064844
-    },
-    {
-      "token": "7c0c3f95701297861bdaacdcd4656bd5043da9cf028b2d7e",
-      "user": "svcode_npms",
-      "exp": 1785148199563
-    },
-    {
-      "token": "c3147c7e1674fc628afa64c013b36f66b5f0abcda2400bc7",
-      "user": "svcode_npms",
-      "exp": 1785149495066
+      "exp": 1785151586513
     }
   ],
   "links": []

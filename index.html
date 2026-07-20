@@ -247,6 +247,57 @@ canvas#bg-canvas { position: fixed; inset: 0; z-index: -10; pointer-events: none
 
 .route-error-icon { font-size: 3rem; color: var(--accent-red); margin-bottom: 16px; animation: iconPulse 2s ease-in-out infinite; }
 
+.admin-nav-btn:hover { color: var(--accent-cyan); border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.05); }
+
+.admin-panel { position: fixed; inset: 0; z-index: 50; background: var(--bg-void); overflow-y: auto; opacity: 0; visibility: hidden; transition: all 0.4s var(--ease-smooth); }
+.admin-panel.active { opacity: 1; visibility: visible; }
+.admin-top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: rgba(3,3,5,0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.04); }
+.admin-title { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 800; letter-spacing: 3px; display: flex; align-items: center; gap: 10px; }
+.admin-title i { color: var(--accent-cyan); }
+.admin-content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.admin-stat { padding: 16px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius-md); text-align: center; }
+.admin-stat .val { font-family: var(--font-mono); font-size: 1.8rem; font-weight: 800; color: var(--accent-cyan); }
+.admin-stat .lbl { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 2px; color: var(--text-muted); margin-top: 4px; }
+.admin-users { display: flex; flex-direction: column; gap: 16px; }
+.admin-user-card { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius-lg); overflow: hidden; transition: border-color 0.3s ease; }
+.admin-user-card:hover { border-color: rgba(0,229,255,0.1); }
+.admin-user-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; transition: background 0.2s ease; }
+.admin-user-header:hover { background: rgba(255,255,255,0.02); }
+.admin-user-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(185,103,255,0.15)); border: 1px solid rgba(0,229,255,0.2); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan); flex-shrink: 0; }
+.admin-user-info { flex: 1; min-width: 0; }
+.admin-user-name { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--text-primary); }
+.admin-user-meta { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-muted); margin-top: 2px; display: flex; gap: 12px; }
+.admin-role-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.5rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.admin-role-tag.admin { background: rgba(0,229,255,0.12); color: var(--accent-cyan); border: 1px solid rgba(0,229,255,0.2); }
+.admin-role-tag.user { background: rgba(185,103,255,0.1); color: var(--accent-violet); border: 1px solid rgba(185,103,255,0.15); }
+.admin-user-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.admin-act-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color: var(--text-muted); cursor: pointer; font-size: 0.72rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
+.admin-act-btn:hover { background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.2); color: var(--accent-cyan); }
+.admin-act-btn.danger:hover { background: rgba(255,51,102,0.1); border-color: rgba(255,51,102,0.2); color: var(--accent-red); }
+.admin-chevron { font-size: 0.72rem; color: var(--text-dim); transition: transform 0.3s ease; flex-shrink: 0; }
+.admin-user-card.expanded .admin-chevron { transform: rotate(180deg); }
+.admin-user-links { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease-smooth); }
+.admin-user-card.expanded .admin-user-links { max-height: 2000px; }
+.admin-link-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px 10px 76px; border-top: 1px solid rgba(255,255,255,0.02); transition: background 0.2s ease; }
+.admin-link-item:hover { background: rgba(255,255,255,0.01); }
+.admin-link-info { flex: 1; min-width: 0; }
+.admin-link-short { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan); word-break: break-all; font-weight: 600; }
+.admin-link-target { font-size: 0.58rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-link-meta { font-family: var(--font-mono); font-size: 0.52rem; color: var(--text-dim); white-space: nowrap; display: flex; gap: 8px; flex-shrink: 0; }
+.admin-link-hidden { color: var(--accent-amber) !important; }
+.admin-link-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.admin-empty { text-align: center; padding: 40px; color: var(--text-muted); }
+.admin-empty i { font-size: 1.5rem; color: var(--text-dim); margin-bottom: 8px; }
+.admin-empty p { font-size: 0.78rem; }
+
+@media (max-width: 600px) {
+  .admin-stats { grid-template-columns: 1fr; }
+  .admin-content { padding: 16px; }
+  .admin-link-item { padding-left: 20px; flex-wrap: wrap; }
+  .admin-user-header { padding: 12px 16px; }
+}
+
 @media (max-width: 1000px) {
   .dashboard-main { grid-template-columns: 1fr; }
   .sidebar { order: -1; }
@@ -345,6 +396,7 @@ canvas#bg-canvas { position: fixed; inset: 0; z-index: -10; pointer-events: none
       </div>
       <div class="nav-actions">
         <div class="status-indicator"><span class="status-dot"></span> <span>SECURE</span></div>
+        <button class="nav-btn admin-nav-btn" id="btn-admin" title="Admin Panel" style="display:none;"><i class="fa-solid fa-user-shield"></i></button>
         <button class="nav-btn" id="btn-logout" title="Terminate Session"><i class="fa-solid fa-power-off"></i></button>
       </div>
     </nav>
@@ -370,12 +422,46 @@ canvas#bg-canvas { position: fixed; inset: 0; z-index: -10; pointer-events: none
               <div class="input-group">
                 <select id="prefix-select" class="vault-select" style="padding-left:14px;">
                   <option value="">/</option>
-                  <option value="sub/">sub/</option>
-                  <option value="r/">r/</option>
-                  <option value="go/">go/</option>
-                  <option value="v1/">v1/</option>
-                  <option value="s/">s/</option>
-                  <option value="x/">x/</option>
+                  <optgroup label="API">
+                    <option value="api/">api/</option>
+                    <option value="v1/">v1/</option>
+                    <option value="v2/">v2/</option>
+                  </optgroup>
+                  <optgroup label="CDN">
+                    <option value="cdn/">cdn/</option>
+                    <option value="static/">static/</option>
+                    <option value="assets/">assets/</option>
+                  </optgroup>
+                  <optgroup label="Short">
+                    <option value="s/">s/</option>
+                    <option value="r/">r/</option>
+                    <option value="go/">go/</option>
+                    <option value="x/">x/</option>
+                    <option value="d/">d/</option>
+                  </optgroup>
+                  <optgroup label="Links">
+                    <option value="link/">link/</option>
+                    <option value="links/">links/</option>
+                    <option value="ref/">ref/</option>
+                    <option value="out/">out/</option>
+                    <option value="to/">to/</option>
+                  </optgroup>
+                  <optgroup label="Content">
+                    <option value="p/">p/</option>
+                    <option value="f/">f/</option>
+                    <option value="m/">m/</option>
+                    <option value="w/">w/</option>
+                    <option value="t/">t/</option>
+                  </optgroup>
+                  <optgroup label="Dev">
+                    <option value="dev/">dev/</option>
+                    <option value="app/">app/</option>
+                    <option value="hub/">hub/</option>
+                    <option value="kit/">kit/</option>
+                  </optgroup>
+                  <optgroup label="Custom">
+                    <option value="sub/">sub/</option>
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -441,6 +527,21 @@ canvas#bg-canvas { position: fixed; inset: 0; z-index: -10; pointer-events: none
     </main>
   </section>
 
+  <div id="admin-panel" class="admin-panel">
+    <div class="admin-top">
+      <div class="admin-title"><i class="fa-solid fa-user-shield"></i> ADMIN CONTROL CENTER</div>
+      <button class="nav-btn" id="btn-admin-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="admin-content">
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="val" id="admin-stat-users">0</div><div class="lbl">USERS</div></div>
+        <div class="admin-stat"><div class="val" id="admin-stat-links">0</div><div class="lbl">TOTAL LINKS</div></div>
+        <div class="admin-stat"><div class="val" id="admin-stat-clicks">0</div><div class="lbl">TOTAL CLICKS</div></div>
+      </div>
+      <div class="admin-users" id="admin-users-list"></div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <div id="qr-modal" class="modal">
@@ -474,12 +575,46 @@ canvas#bg-canvas { position: fixed; inset: 0; z-index: -10; pointer-events: none
           <div class="input-group">
             <select id="edit-prefix" class="vault-select" style="padding-left:14px;">
               <option value="">/</option>
-              <option value="sub/">sub/</option>
-              <option value="r/">r/</option>
-              <option value="go/">go/</option>
-              <option value="v1/">v1/</option>
-              <option value="s/">s/</option>
-              <option value="x/">x/</option>
+              <optgroup label="API">
+                <option value="api/">api/</option>
+                <option value="v1/">v1/</option>
+                <option value="v2/">v2/</option>
+              </optgroup>
+              <optgroup label="CDN">
+                <option value="cdn/">cdn/</option>
+                <option value="static/">static/</option>
+                <option value="assets/">assets/</option>
+              </optgroup>
+              <optgroup label="Short">
+                <option value="s/">s/</option>
+                <option value="r/">r/</option>
+                <option value="go/">go/</option>
+                <option value="x/">x/</option>
+                <option value="d/">d/</option>
+              </optgroup>
+              <optgroup label="Links">
+                <option value="link/">link/</option>
+                <option value="links/">links/</option>
+                <option value="ref/">ref/</option>
+                <option value="out/">out/</option>
+                <option value="to/">to/</option>
+              </optgroup>
+              <optgroup label="Content">
+                <option value="p/">p/</option>
+                <option value="f/">f/</option>
+                <option value="m/">m/</option>
+                <option value="w/">w/</option>
+                <option value="t/">t/</option>
+              </optgroup>
+              <optgroup label="Dev">
+                <option value="dev/">dev/</option>
+                <option value="app/">app/</option>
+                <option value="hub/">hub/</option>
+                <option value="kit/">kit/</option>
+              </optgroup>
+              <optgroup label="Custom">
+                <option value="sub/">sub/</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -639,7 +774,8 @@ function doLogin(){
       if(panel){panel.style.animation='none';void panel.offsetHeight;panel.style.animation='shake 0.5s ease';}
       return;
     }
-    S.auth=true;S.user=data.user;S.token=data.token;saveToken();
+    S.auth=true;S.user=data.user;S.token=data.token;S.role=data.user.role||'user';saveToken();
+    updateAdminBtn();
     log('Authenticated','success');
     toast('Access granted','success');
     loadLinks();
@@ -652,10 +788,11 @@ function autoLogin(){
   if(!S.token){showScreen('login');return;}
   xhr('GET','/api/me',null,function(err,data){
     if(err){S.token='';saveToken();showScreen('login');return;}
-    S.auth=true;S.user=data.user;
+    S.auth=true;S.user=data.user;S.role=data.user.role||'user';
     S.urls=Array.isArray(data.links)?data.links:[];
     for(var i=0;i<S.urls.length;i++)S.urls[i].time=normTime(S.urls[i].time);
     showScreen('dashboard');
+    updateAdminBtn();
     toast('Welcome back','success');
     log('Session restored','success','dash');
     renderLinks();
@@ -664,7 +801,9 @@ function autoLogin(){
 }
 
 function doLogout(){
-  S.auth=false;S.user=null;S.token='';S.urls=[];saveToken();
+  S.auth=false;S.user=null;S.token='';S.urls=[];S.role='';saveToken();
+  updateAdminBtn();
+  hideAdminPanel();
   showScreen('login');
   document.getElementById('login-user').value='';
   document.getElementById('login-pass').value='';
@@ -879,7 +1018,120 @@ resizeBG();window.addEventListener('resize',resizeBG);
   requestAnimationFrame(animBG);
 })();
 
+function updateAdminBtn(){
+  var btn=document.getElementById('btn-admin');
+  if(btn)btn.style.display=(S.role==='admin')?'flex':'none';
+}
+
+function showAdminPanel(){
+  document.getElementById('admin-panel').classList.add('active');
+  loadAdminUsers();
+}
+function hideAdminPanel(){document.getElementById('admin-panel').classList.remove('active');}
+
+function loadAdminUsers(){
+  xhr('GET','/api/admin/users',null,function(err,data){
+    if(err){toast('Admin access failed','error');return;}
+    var users=data.users||[];
+    var totalLinks=0,totalClicks=0;
+    for(var i=0;i<users.length;i++){
+      totalLinks+=users[i].linkCount||0;
+      var ll=users[i].links||[];
+      for(var j=0;j<ll.length;j++)totalClicks+=ll[j].clicks||0;
+    }
+    document.getElementById('admin-stat-users').textContent=users.length;
+    document.getElementById('admin-stat-links').textContent=totalLinks;
+    document.getElementById('admin-stat-clicks').textContent=totalClicks;
+    var list=document.getElementById('admin-users-list');
+    if(users.length===0){list.innerHTML='<div class="admin-empty"><i class="fa-solid fa-users-slash"></i><p>No users found</p></div>';return;}
+    var h='';
+    for(var i=0;i<users.length;i++){
+      var u=users[i];
+      var initials=(u.name||u.username||'?').substring(0,2).toUpperCase();
+      var isSelf=u.username===S.user.username;
+      var roleTag=u.role==='admin'?'<span class="admin-role-tag admin">ADMIN</span>':'<span class="admin-role-tag user">USER</span>';
+      h+='<div class="admin-user-card" data-username="'+esc(u.username)+'">'
+        +'<div class="admin-user-header" data-admin-act="expand" data-admin-user="'+esc(u.username)+'">'
+        +'<div class="admin-user-avatar">'+esc(initials)+'</div>'
+        +'<div class="admin-user-info">'
+        +'<div class="admin-user-name">'+esc(u.name||u.username)+'</div>'
+        +'<div class="admin-user-meta">'+roleTag+'<span>'+u.linkCount+' link'+(u.linkCount!==1?'s':'')+'</span><span style="color:var(--text-dim)">@'+esc(u.username)+'</span></div>'
+        +'</div>'
+        +(!isSelf&&u.role!=='admin'?'<div class="admin-user-actions"><button class="admin-act-btn danger" data-admin-act="delete-user" data-admin-user="'+esc(u.username)+'" title="Delete user"><i class="fa-solid fa-trash"></i></button></div>':'')
+        +'<div class="admin-chevron"><i class="fa-solid fa-chevron-down"></i></div>'
+        +'</div>'
+        +'<div class="admin-user-links" id="admin-links-'+esc(u.username)+'">';
+      var links=u.links||[];
+      if(links.length===0){
+        h+='<div class="admin-link-item" style="justify-content:center;color:var(--text-dim);font-size:0.65rem;font-family:var(--font-mono);">No links</div>';
+      }
+      for(var j=0;j<links.length;j++){
+        var lk=links[j];
+        var hiddenClass=lk.hidden?' admin-link-hidden':'';
+        var hideIcon=lk.hidden?'fa-eye':'fa-eye-slash';
+        var hideTitle=lk.hidden?'Show link':'Hide link';
+        h+='<div class="admin-link-item'+hiddenClass+'" data-admin-link-id="'+esc(String(lk.id))+'">'
+          +'<div class="admin-link-info">'
+          +'<div class="admin-link-short">'+esc(lk.short||lk.route)+'</div>'
+          +'<div class="admin-link-target">'+esc(lk.target)+'</div>'
+          +'</div>'
+          +'<div class="admin-link-meta"><span>'+(lk.clicks||0)+' clicks</span>'+(lk.hidden?'<span class="admin-link-hidden">HIDDEN</span>':'')+'</div>'
+          +'<div class="admin-link-actions">'
+          +'<button class="admin-act-btn" data-admin-act="toggle-hide" data-admin-link="'+esc(String(lk.id))+'" title="'+hideTitle+'"><i class="fa-solid '+hideIcon+'"></i></button>'
+          +'<button class="admin-act-btn danger" data-admin-act="delete-link" data-admin-link="'+esc(String(lk.id))+'" title="Delete link"><i class="fa-solid fa-trash"></i></button>'
+          +'</div></div>';
+      }
+      h+='</div></div>';
+    }
+    list.innerHTML=h;
+  });
+}
+
+document.getElementById('btn-admin').addEventListener('click',showAdminPanel);
+document.getElementById('btn-admin-close').addEventListener('click',hideAdminPanel);
+
+document.getElementById('admin-users-list').addEventListener('click',function(e){
+  var btn=e.target.closest('[data-admin-act]');
+  if(!btn)return;
+  var act=btn.getAttribute('data-admin-act');
+  if(act==='expand'){
+    var card=btn.closest('.admin-user-card');
+    if(card)card.classList.toggle('expanded');
+  }else if(act==='toggle-hide'){
+    var linkId=btn.getAttribute('data-admin-link');
+    xhr('PUT','/api/admin/links/'+encodeURIComponent(linkId)+'/hide',null,function(err,data){
+      if(err){toast('Toggle failed','error');return;}
+      loadAdminUsers();
+      toast(data.hidden?'Link hidden':'Link visible','success');
+    });
+  }else if(act==='delete-link'){
+    var linkId=btn.getAttribute('data-admin-link');
+    if(!confirm('Delete this link?'))return;
+    xhr('DELETE','/api/admin/links/'+encodeURIComponent(linkId),null,function(err){
+      if(err){toast('Delete failed','error');return;}
+      loadAdminUsers();toast('Link deleted','info');
+    });
+  }else if(act==='delete-user'){
+    var uname=btn.getAttribute('data-admin-user');
+    if(!confirm('Delete user "'+uname+'" and ALL their links?'))return;
+    xhr('DELETE','/api/admin/users/'+encodeURIComponent(uname),null,function(err){
+      if(err){toast('Delete failed: '+(err.message||''),'error');return;}
+      loadAdminUsers();toast('User deleted','info');
+    });
+  }
+});
+
 autoLogin();
+
+window.adduser=function(username,password,displayName){
+  if(!S.token){console.error('[Vault] You must be logged in to create users');return;}
+  if(!username||!password){console.error('[Vault] Usage: adduser("username","password","Display Name")');return;}
+  xhr('POST','/api/admin/user',{username:username,password:password,displayName:displayName||username},function(err,data){
+    if(err){console.error('[Vault] Error:',err.message);return;}
+    console.log('[Vault] User created:',JSON.stringify(data.user));
+  });
+};
+
 })();
 </script>
 </body>

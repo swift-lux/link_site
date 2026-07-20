@@ -13,7 +13,7 @@ var ICO = path.join(ROOT, 'favicon.svg');
 function init() {
   if (!fs.existsSync(DATA)) fs.mkdirSync(DATA, { recursive: true });
   if (!fs.existsSync(DB)) {
-    var first = { users: [{ id: 1, username: 'svcode_npms', name: 'SVCODE Admin', passwordHash: hash('vectorpro9') }], sessions: [], links: [] };
+    var first = { users: [{ id: 1, username: 'svcode_npms', name: 'SVCODE Admin', passwordHash: hash('vectorpro9'), role: 'admin' }], sessions: [], links: [] };
     fs.writeFileSync(DB, JSON.stringify(first, null, 2));
   }
 }
@@ -141,7 +141,7 @@ function userLinks(owner) {
   return result.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
 }
 
-var RESERVED = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/favicon.svg', '/index.html'];
+var RESERVED = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/api/admin', '/favicon.svg', '/index.html'];
 
 function isReserved(r) {
   for (var i = 0; i < RESERVED.length; i++) {
@@ -151,7 +151,13 @@ function isReserved(r) {
 }
 
 function isAPI(p) {
-  return p === '/api/auth' || p === '/api/me' || p === '/api/links' || /^\/api\/links\/\d+$/.test(p);
+  return p === '/api/auth' || p === '/api/me' || p === '/api/links' || p === '/api/admin/user' || /^\/api\/admin\/users$/.test(p) || /^\/api\/admin\/links\/[^/]+\/hide$/.test(p) || /^\/api\/admin\/users\/[^/]+$/.test(p) || /^\/api\/links\/\d+$/.test(p);
+}
+
+function notFound404(res, requestedPath) {
+  var p = requestedPath ? '<p style="color:#7a7a9a;margin-bottom:8px;font-size:0.92rem;">Route: <code style="color:#00e5ff;background:rgba(0,229,255,0.08);padding:2px 8px;border-radius:6px;font-family:monospace;">' + String(requestedPath).replace(/</g, '&lt;') + '</code></p>' : '';
+  var h = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 | SVCODE URL Vault</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#030305;color:#e6e6f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}.c{text-align:center;padding:32px}.code{font-size:6rem;font-weight:900;font-family:monospace;background:linear-gradient(135deg,#00e5ff,#b967ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:12px}.sub{font-size:1rem;color:#7a7a9a;letter-spacing:4px;margin-bottom:8px;font-family:monospace}.msg{color:#4a4a6a;font-size:0.82rem;margin-bottom:24px}.btn{display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#00e5ff,#b967ff);color:#030305;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.78rem;letter-spacing:2px;font-family:monospace;transition:transform 0.2s,box-shadow 0.2s}.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,255,0.3)}.ring{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;border:1px solid rgba(0,229,255,0.06);border-radius:50%;animation:pulse 3s ease-in-out infinite}.ring:nth-child(2){width:220px;height:220px;border-color:rgba(185,103,255,0.06);animation-delay:0.5s}@keyframes pulse{0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:0.8;transform:translate(-50%,-50%) scale(1.05)}}</style></head><body><div class="ring"></div><div class="ring"></div><div class="c"><div class="code">404</div><div class="sub">LINK NOT FOUND</div>' + p + '<div class="msg">This short link does not exist or has been removed.</div><a href="/" class="btn">RETURN HOME</a></div></body></html>';
+  html(res, 404, h);
 }
 
 var server = http.createServer(function(req, res) {
@@ -193,7 +199,7 @@ var server = http.createServer(function(req, res) {
       var tok = crypto.randomBytes(24).toString('hex');
       db.sessions.push({ token: tok, user: user.username, exp: Date.now() + 604800000 });
       writeDB(db);
-      return json(res, 200, { token: tok, user: { username: user.username, name: user.name } });
+      return json(res, 200, { token: tok, user: { username: user.username, name: user.name, role: user.role || 'user' } });
     });
   }
 
@@ -220,14 +226,19 @@ var server = http.createServer(function(req, res) {
     // GET /api/me
     if (pn === '/api/me' && method === 'GET') {
       var u = findUser(owner);
+      var isAdmin = u && u.role === 'admin';
       var links = userLinks(owner);
+      if (!isAdmin) links = links.filter(function(l) { return !l.hidden; });
       for (var i = 0; i < links.length; i++) links[i] = Object.assign({}, links[i], { short: mkShort(host, links[i].prefix, links[i].slug, proto) });
-      return json(res, 200, { user: { username: owner, name: u ? u.name : owner }, links: links });
+      return json(res, 200, { user: { username: owner, name: u ? u.name : owner, role: u ? u.role || 'user' : 'user' }, links: links });
     }
 
     // GET /api/links
     if (pn === '/api/links' && method === 'GET') {
+      var u = findUser(owner);
+      var isAdmin = u && u.role === 'admin';
       var links = userLinks(owner);
+      if (!isAdmin) links = links.filter(function(l) { return !l.hidden; });
       for (var i = 0; i < links.length; i++) links[i] = Object.assign({}, links[i], { short: mkShort(host, links[i].prefix, links[i].slug, proto) });
       return json(res, 200, { links: links });
     }
@@ -248,7 +259,7 @@ var server = http.createServer(function(req, res) {
           route: route, short: mkShort(host, b.prefix, b.slug, proto),
           label: String(b.label || '').trim(),
           hash: crypto.randomBytes(4).toString('hex'),
-          time: new Date().toISOString(), clicks: 0, lastUsed: null, created: Date.now()
+          time: new Date().toISOString(), clicks: 0, lastUsed: null, created: Date.now(), hidden: false
         };
         db.links.push(entry);
         writeDB(db);
@@ -291,6 +302,94 @@ var server = http.createServer(function(req, res) {
       return json(res, 200, { ok: true });
     }
 
+    // POST /api/admin/user
+    if (pn === '/api/admin/user' && method === 'POST') {
+      var cu = findUser(owner);
+      if (!cu || cu.role !== 'admin') return json(res, 403, { error: 'Admin only' });
+      return readBody(req, function(b) {
+        var newUser = String(b.username || '').trim().toLowerCase();
+        var newPass = String(b.password || '');
+        var newName = String(b.displayName || b.name || newUser).trim();
+        if (!newUser || !newPass) return json(res, 400, { error: 'Username and password required' });
+        if (newUser.length < 3 || newUser.length > 24) return json(res, 400, { error: 'Username must be 3-24 chars' });
+        if (newPass.length < 4) return json(res, 400, { error: 'Password must be at least 4 chars' });
+        if (!/^[a-z0-9_]+$/.test(newUser)) return json(res, 400, { error: 'Username: lowercase letters, digits, underscore only' });
+        if (findUser(newUser)) return json(res, 409, { error: 'Username already exists' });
+        var nextId = db.users.length + 1;
+        for (var i = 0; i < db.users.length; i++) { if (db.users[i].id >= nextId) nextId = db.users[i].id + 1; }
+        db.users.push({ id: nextId, username: newUser, name: newName, passwordHash: hash(newPass), role: 'user' });
+        writeDB(db);
+        return json(res, 200, { ok: true, user: { id: nextId, username: newUser, name: newName } });
+      });
+    }
+
+    // GET /api/admin/users
+    if (pn === '/api/admin/users' && method === 'GET') {
+      var cu = findUser(owner);
+      if (!cu || cu.role !== 'admin') return json(res, 403, { error: 'Admin only' });
+      var users = [];
+      for (var i = 0; i < db.users.length; i++) {
+        var ulinks = [];
+        for (var j = 0; j < db.links.length; j++) {
+          if (db.links[j].owner === db.users[i].username) {
+            var lk = Object.assign({}, db.links[j]);
+            lk.short = mkShort(host, lk.prefix, lk.slug, proto);
+            ulinks.push(lk);
+          }
+        }
+        users.push({
+          id: db.users[i].id, username: db.users[i].username, name: db.users[i].name,
+          role: db.users[i].role || 'user', linkCount: ulinks.length, links: ulinks
+        });
+      }
+      return json(res, 200, { users: users });
+    }
+
+    // PUT /api/admin/links/:id/hide
+    var hideMatch = pn.match(/^\/api\/admin\/links\/(.+)\/hide$/);
+    if (hideMatch && method === 'PUT') {
+      var cu = findUser(owner);
+      if (!cu || cu.role !== 'admin') return json(res, 403, { error: 'Admin only' });
+      var linkId = hideMatch[1];
+      var link = null;
+      for (var i = 0; i < db.links.length; i++) {
+        if (String(db.links[i].id) === linkId) { link = db.links[i]; break; }
+      }
+      if (!link) return json(res, 404, { error: 'Link not found' });
+      link.hidden = !link.hidden;
+      writeDB(db);
+      return json(res, 200, { ok: true, hidden: link.hidden });
+    }
+
+    // DELETE /api/admin/links/:id (admin delete any link)
+    var adminDelLink = pn.match(/^\/api\/admin\/links\/([^/]+)$/);
+    if (adminDelLink && method === 'DELETE') {
+      var cu = findUser(owner);
+      if (!cu || cu.role !== 'admin') return json(res, 403, { error: 'Admin only' });
+      var linkId = adminDelLink[1];
+      var before = db.links.length;
+      db.links = db.links.filter(function(l) { return String(l.id) !== linkId; });
+      writeDB(db);
+      return json(res, 200, { ok: true, deleted: db.links.length < before });
+    }
+
+    // DELETE /api/admin/users/:id
+    var adminDelUser = pn.match(/^\/api\/admin\/users\/([^/]+)$/);
+    if (adminDelUser && method === 'DELETE') {
+      var cu = findUser(owner);
+      if (!cu || cu.role !== 'admin') return json(res, 403, { error: 'Admin only' });
+      var targetUser = adminDelUser[1];
+      if (targetUser === owner) return json(res, 400, { error: 'Cannot delete yourself' });
+      var target = findUser(targetUser);
+      if (!target) return json(res, 404, { error: 'User not found' });
+      if (target.role === 'admin') return json(res, 403, { error: 'Cannot delete admin users' });
+      db.links = db.links.filter(function(l) { return l.owner !== targetUser; });
+      db.users = db.users.filter(function(u) { return u.username !== targetUser; });
+      db.sessions = db.sessions.filter(function(s) { return s.user !== targetUser; });
+      writeDB(db);
+      return json(res, 200, { ok: true });
+    }
+
     return json(res, 404, { error: 'Not found' });
   }
 
@@ -309,7 +408,7 @@ var server = http.createServer(function(req, res) {
     }
   }
 
-  json(res, 404, { error: 'Not found' });
+  return notFound404(res, pn);
 });
 
 server.listen(PORT, function() {
