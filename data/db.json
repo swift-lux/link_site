@@ -1,0 +1,44 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "svcode_npms",
+      "name": "SVCODE Admin",
+      "passwordHash": "170437ebd1e05eefaba2bf95e8bf35603ef5a4af87daac83600221fe321c653d"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "56ed5042c931de3e474fd275ddfc635ae01a363df4915421",
+      "user": "svcode_npms",
+      "expiresAt": 1785111752442
+    },
+    {
+      "token": "7b52dfc47902ad3f9cdccbc0b5cca1dd35629b30a26be93f",
+      "user": "svcode_npms",
+      "expiresAt": 1785113750617
+    },
+    {
+      "token": "ab3df1dd6df343312d0dd59f4ad0bdd5c5706df60b57a19a",
+      "user": "svcode_npms",
+      "expiresAt": 1785114044372
+    }
+  ],
+  "links": [
+    {
+      "id": 1784506970315,
+      "owner": "svcode_npms",
+      "target": "https://tapy.me/svcode",
+      "prefix": "api",
+      "slug": "svcode",
+      "route": "/api/n3cARLJ3",
+      "short": "http://127.0.0.1:4100/api/svcode",
+      "label": "server",
+      "hash": "ea6ccf72",
+      "time": "2026-07-20T00:22:32.444Z",
+      "clicks": 1,
+      "lastUsed": "2026-07-20T01:00:44.377Z",
+      "createdAt": 1784506952444
+    }
+  ]
+}
