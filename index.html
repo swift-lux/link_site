@@ -593,601 +593,458 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
 </div>
 <script>
 (function() {
-  var _s = {
-    auth: false,
-    user: null,
-    token: localStorage.getItem('_sv') || '',
-    urls: [],
-    lastAct: Date.now()
-  };
+  'use strict';
 
-  var $ = function(sel, ctx) { ctx = ctx || document; return ctx.querySelector(sel); };
+  var TOKEN_KEY = '_sv';
+  var state = { auth: false, user: null, token: localStorage.getItem(TOKEN_KEY) || '', urls: [] };
 
-  function _baseUrl() {
-    return window.location.origin || (window.location.protocol + '//' + window.location.host);
+  function el(s) { return document.querySelector(s); }
+  function origin() { return window.location.origin || (window.location.protocol + '//' + window.location.host); }
+  function route(prefix, slug) {
+    var p = String(prefix || '').replace(/^\/+|\/+$/g, '');
+    var s = String(slug || '').replace(/^\/+|\/+$/g, '');
+    return s ? '/' + (p ? p + '/' : '') + s : '/';
+  }
+  function shortUrl(host, prefix, slug, proto) { return (proto || location.protocol.replace(':', '')) + '://' + host + route(prefix, slug); }
+  function now() { return Date.now(); }
+  function esc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function ts() { return new Date().toTimeString().slice(0, 8); }
+  function slug(n) { n = n || 8; return 'x' + Math.random().toString(36).slice(2, 2 + n); }
+  function fmtTime(v) { var d = v instanceof Date ? v : new Date(v); if (isNaN(d)) d = new Date(); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }); }
+
+  function saveToken() {
+    if (state.token) localStorage.setItem(TOKEN_KEY, state.token);
+    else localStorage.removeItem(TOKEN_KEY);
   }
 
-  function _pathFrom(prefix, slug) {
-    var p = String(prefix || '').trim().replace(/^\/+|\/+$/g, '');
-    var s = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
-    if (!s) return '/';
-    return '/' + (p ? p + '/' : '') + s;
+  function showScreen(name) {
+    el('#login-screen').className = name === 'login' ? 'screen active' : 'screen';
+    el('#route-screen').className = name === 'route' ? 'screen active' : 'screen';
+    el('#dashboard-screen').className = name === 'dashboard' ? 'screen active' : 'screen';
   }
 
-  function _fullUrl(prefix, slug) {
-    return _baseUrl() + _pathFrom(prefix, slug);
+  function toast(msg, type) {
+    var c = el('#toast-container');
+    var d = document.createElement('div');
+    d.className = 'toast ' + (type || 'info');
+    var icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+    d.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + msg;
+    c.appendChild(d);
+    setTimeout(function() { if (d.parentNode) d.parentNode.removeChild(d); }, 4000);
   }
 
-  function _curPath() {
-    var hash = (window.location.hash || '').replace(/^#/, '').trim();
-    if (hash && hash.charAt(0) === '/') return hash;
-    if (hash) return '/' + hash;
-    return window.location.pathname || '/';
+  function log(msg, type, target) {
+    var c = target === 'dash' ? el('#console-body') : el('#login-log');
+    if (!c) return;
+    var d = document.createElement('div');
+    var cls = target === 'dash' ? 'console-line' : 'log-line';
+    var tc = { info: 'info', warn: 'warn', error: 'error', success: 'success' }[type] || 'info';
+    d.className = cls;
+    if (target === 'dash') {
+      d.innerHTML = '<span class="ts">' + ts() + '</span> <span class="lvl ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
+    } else {
+      d.innerHTML = '<span class="log-time">[' + ts() + ']</span> <span class="log-type ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
+    }
+    c.appendChild(d);
+    c.scrollTop = c.scrollHeight;
+    while (c.children.length > 60) c.removeChild(c.firstChild);
   }
 
-  function _saveTk() {
-    if (_s.token) localStorage.setItem('_sv', _s.token);
-    else localStorage.removeItem('_sv');
-  }
-
-  function _normTime(v) {
+  function normTime(v) {
     if (!v) return new Date();
     var d = v instanceof Date ? v : new Date(v);
     return isNaN(d.getTime()) ? new Date() : d;
   }
 
-  function _fmtTime(v) {
-    var d = _normTime(v);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-  }
-
-  function _esc(v) {
-    return String(v == null ? '' : v)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function _tm(d) {
-    d = d || new Date();
-    return d.toTimeString().slice(0, 8);
-  }
-
-  function _showScreen(name) {
-    $('#login-screen').classList.remove('active');
-    $('#route-screen').classList.remove('active');
-    $('#dashboard-screen').classList.remove('active');
-    if (name === 'login') $('#login-screen').classList.add('active');
-    if (name === 'route') $('#route-screen').classList.add('active');
-    if (name === 'dashboard') $('#dashboard-screen').classList.add('active');
-  }
-
-  function _showRoute(title, msg, meta) {
-    _showScreen('route');
-    $('#route-title').textContent = title;
-    $('#route-message').innerHTML = msg;
-    $('#route-meta').textContent = meta || '';
-  }
-
-  function _log(msg, type, target) {
-    type = type || 'info';
-    target = target || 'login';
-    var c = target === 'login' ? $('#login-log') : $('#console-body');
-    if (!c) return;
-    var ln = document.createElement('div');
-    ln.className = target === 'login' ? 'log-line' : 'console-line';
-    var tc = { info: 'info', warn: 'warn', error: 'error', success: 'success' }[type] || 'info';
-    if (target === 'login') {
-      ln.innerHTML = '<span class="log-time">[' + _tm() + ']</span> <span class="log-type ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
-    } else {
-      ln.innerHTML = '<span class="ts">' + _tm() + '</span> <span class="lvl ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
+  /* ===== XHR — the only network function ===== */
+  function xhr(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, url, true);
+    if (body !== null && body !== undefined) {
+      x.setRequestHeader('Content-Type', 'application/json');
     }
-    c.appendChild(ln);
-    c.scrollTop = c.scrollHeight;
-    while (c.children.length > 60) c.removeChild(c.firstChild);
-  }
-
-  function _toast(msg, type) {
-    type = type || 'info';
-    var tc = $('#toast-container');
-    var el = document.createElement('div');
-    el.className = 'toast ' + type;
-    var icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
-    el.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + msg;
-    tc.appendChild(el);
-    setTimeout(function() { el.remove(); }, 3900);
-  }
-
-  function _api(path, opts, cb) {
-    opts = opts || {};
-    cb = cb || function() {};
-    var xhr = new XMLHttpRequest();
-    var m = opts.method || 'GET';
-    xhr.open(m, path, true);
-    var bodyStr = null;
-    if (opts.body) {
-      bodyStr = typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-    }
-    if (_s.token) {
-      xhr.setRequestHeader('Authorization', _s.token);
-    }
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) return;
+    if (state.token) x.setRequestHeader('Authorization', state.token);
+    x.onreadystatechange = function() {
+      if (x.readyState !== 4) return;
       var d = {};
-      try { d = xhr.responseText ? JSON.parse(xhr.responseText) : {}; } catch (e) { d = {}; }
-      if (xhr.status >= 200 && xhr.status < 300) { cb(null, d); }
-      else { cb(new Error(d.error || 'Request failed'), d); }
+      try { d = x.responseText ? JSON.parse(x.responseText) : {}; } catch(e) { d = {}; }
+      if (x.status >= 200 && x.status < 300) cb(null, d);
+      else cb(new Error(d.error || 'Error ' + x.status), d);
     };
-    xhr.onerror = function() { cb(new Error('Network error')); };
-    xhr.send(bodyStr);
+    x.onerror = function() { cb(new Error('Network error')); };
+    x.send(body !== null && body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : null);
   }
 
-  function _loadLinks() {
-    _api('/api/links', {}, function(err, data) {
-      if (err) {
-        _log('Sync failed: ' + err.message, 'warn', 'dash');
-        return;
-      }
-      _s.urls = Array.isArray(data.links) ? data.links : [];
-      _s.urls.forEach(function(item) { item.time = _normTime(item.time); });
-      _rend();
-      _upd();
-      _log('Links synchronized', 'success', 'dash');
+  function renderLinks() {
+    var list = el('#url-list');
+    var count = el('#link-count');
+    count.textContent = state.urls.length + ' active short URL' + (state.urls.length !== 1 ? 's' : '');
+    if (state.urls.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><p>No forged links yet</p><span>Create your first short URL above</span></div>';
+      return;
+    }
+    var h = '';
+    for (var i = 0; i < state.urls.length; i++) {
+      var u = state.urls[i];
+      var idx = String(state.urls.length - i).padStart(2, '0');
+      var sj = String(u.short).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+      h += '<div class="url-item" style="animation-delay:' + (i * 0.05) + 's">' +
+        '<span class="url-item-index">#' + idx + '</span>' +
+        '<div class="url-item-info">' +
+        '<div class="url-item-short">' + esc(u.short) + '</div>' +
+        '<div class="url-item-target">' + esc(u.target) + '</div>' +
+        (u.label ? '<div class="url-item-label">' + esc(u.label) + '</div>' : '') +
+        '</div>' +
+        '<span class="url-item-time">' + fmtTime(u.time) + '<br>' + (u.clicks || 0) + ' clicks</span>' +
+        '<div class="url-item-actions">' +
+        '<button class="url-item-btn" onclick="window._cpy(\'' + sj + '\')" title="Copy"><i class="fa-regular fa-copy"></i></button>' +
+        '<button class="url-item-btn" onclick="window.open(\'' + sj + '\',\'_blank\')" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
+        '<button class="url-item-btn" onclick="window._edit(' + u.id + ')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
+        '<button class="url-item-btn" onclick="window._qr(\'' + sj + '\')" title="QR"><i class="fa-solid fa-qrcode"></i></button>' +
+        '<button class="url-item-btn delete" onclick="window._del(' + u.id + ')" title="Delete"><i class="fa-solid fa-trash"></i></button>' +
+        '</div></div>';
+    }
+    list.innerHTML = h;
+  }
+
+  function updateStats() {
+    var clicks = 0, len = 0;
+    for (var i = 0; i < state.urls.length; i++) {
+      clicks += state.urls[i].clicks || 0;
+      len += String(state.urls[i].slug || '').length;
+    }
+    el('#stat-total').textContent = state.urls.length;
+    el('#stat-clicks').textContent = clicks;
+    el('#stat-avg').textContent = state.urls.length ? (len / state.urls.length).toFixed(1) : 0;
+    el('#stat-entropy').textContent = state.urls.length ? esc(state.urls[0].slug || '').length : 0;
+  }
+
+  function loadLinks() {
+    xhr('GET', '/api/links', null, function(err, data) {
+      if (err) { log('Sync failed', 'warn', 'dash'); return; }
+      state.urls = Array.isArray(data.links) ? data.links : [];
+      for (var i = 0; i < state.urls.length; i++) state.urls[i].time = normTime(state.urls[i].time);
+      renderLinks();
+      updateStats();
+      log('Links loaded', 'success', 'dash');
     });
   }
 
-  function _auth() {
-    var u = $('#login-user').value.trim();
-    var p = $('#login-pass').value;
+  /* ===== AUTH ===== */
+  function doLogin() {
+    var u = el('#login-user').value.trim();
+    var p = el('#login-pass').value;
     if (!u || !p) {
-      _toast('Enter credentials', 'error');
-      _log('Missing credentials', 'warn');
+      toast('Enter credentials', 'error');
       return;
     }
+    log('Authenticating...', 'info');
     var body = JSON.stringify({ username: u, password: p });
-    var b64 = btoa(unescape(encodeURIComponent(body)));
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/auth', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('X-Auth-Data', b64);
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) return;
-      var d = {};
-      try { d = xhr.responseText ? JSON.parse(xhr.responseText) : {}; } catch (e) { d = {}; }
-      if (xhr.status >= 200 && xhr.status < 300 && d.token) {
-        _s.auth = true;
-        _s.user = d.user;
-        _s.token = d.token;
-        _saveTk();
-        _log('Authentication successful', 'success');
-        _toast('Access granted', 'success');
-        _loadLinks();
-        _showScreen('dashboard');
-        _log('Dashboard loaded', 'success', 'dash');
-      } else {
-        _log('Auth failed: ' + (d.error || 'Unknown error'), 'error');
-        _toast('Invalid credentials', 'error');
-        var pn = $('.login-panel');
-        if (pn) {
-          pn.style.animation = 'none';
-          pn.offsetHeight;
-          pn.style.animation = 'panelEnter 0.6s ease, shake 0.6s ease';
-        }
-      }
-    };
-    xhr.onerror = function() { _toast('Network error', 'error'); _log('Network error', 'error'); };
-    xhr.send(body);
-  }
-
-  function _autoLogin() {
-    if (!_s.token) {
-      _showScreen('login');
-      return;
-    }
-    _api('/api/me', {}, function(err, data) {
+    xhr('POST', '/api/auth', body, function(err, data) {
       if (err) {
-        _s.token = '';
-        _saveTk();
-        _showScreen('login');
-        _log('Session expired', 'warn');
+        log('Auth failed', 'error');
+        toast('Access denied', 'error');
+        var panel = el('.login-panel');
+        if (panel) {
+          panel.style.animation = 'none';
+          void panel.offsetHeight;
+          panel.style.animation = 'shake 0.5s ease';
+        }
         return;
       }
-      _s.auth = true;
-      _s.user = data.user;
-      _s.urls = Array.isArray(data.links) ? data.links : [];
-      _s.urls.forEach(function(item) { item.time = _normTime(item.time); });
-      _showScreen('dashboard');
-      _log('Session restored', 'success');
-      _toast('Welcome back', 'success');
-      _rend();
-      _upd();
+      state.auth = true;
+      state.user = data.user;
+      state.token = data.token;
+      saveToken();
+      log('Authenticated', 'success');
+      toast('Access granted', 'success');
+      loadLinks();
+      showScreen('dashboard');
+      log('Dashboard ready', 'success', 'dash');
     });
   }
 
-  function _route() {
-    var p = _curPath();
-    if (!p || p === '/' || p === '/index.html' || p === '/index.htm') {
-      if (_s.auth) _showScreen('dashboard');
-      else _showScreen('login');
+  function autoLogin() {
+    if (!state.token) { showScreen('login'); return; }
+    xhr('GET', '/api/me', null, function(err, data) {
+      if (err) {
+        state.token = '';
+        saveToken();
+        showScreen('login');
+        return;
+      }
+      state.auth = true;
+      state.user = data.user;
+      state.urls = Array.isArray(data.links) ? data.links : [];
+      for (var i = 0; i < state.urls.length; i++) state.urls[i].time = normTime(state.urls[i].time);
+      showScreen('dashboard');
+      toast('Welcome back', 'success');
+      log('Session restored', 'success', 'dash');
+      renderLinks();
+      updateStats();
+    });
+  }
+
+  function doLogout() {
+    state.auth = false;
+    state.user = null;
+    state.token = '';
+    state.urls = [];
+    saveToken();
+    showScreen('login');
+    el('#login-user').value = '';
+    el('#login-pass').value = '';
+    el('#result-area').className = 'result-area';
+    toast('Logged out', 'info');
+  }
+
+  /* ===== ROUTING ===== */
+  function curPath() {
+    var h = (window.location.hash || '').replace(/^#/, '').trim();
+    if (h && h.charAt(0) === '/') return h;
+    if (h) return '/' + h;
+    return window.location.pathname || '/';
+  }
+
+  function handleRoute() {
+    var p = curPath();
+    if (!p || p === '/' || p === '/index.html') {
+      if (state.auth) showScreen('dashboard');
+      else showScreen('login');
       return;
     }
     if (p === '/404' || p === '/login') {
-      _showRoute('404 NOT FOUND', 'The requested route could not be resolved.', 'Requested route: ' + p);
+      showScreen('route');
+      el('#route-title').textContent = '404 NOT FOUND';
+      el('#route-message').innerHTML = 'Route not found.';
+      el('#route-meta').textContent = p;
       return;
     }
-    var match = null;
-    for (var i = 0; i < _s.urls.length; i++) {
-      if (_s.urls[i].route === p) { match = _s.urls[i]; break; }
+    for (var i = 0; i < state.urls.length; i++) {
+      if (state.urls[i].route === p && state.urls[i].target) {
+        window.location.replace(state.urls[i].target);
+        return;
+      }
     }
-    if (match && match.target) {
-      match.clicks = (match.clicks || 0) + 1;
-      match.lastUsed = new Date().toISOString();
-      window.location.replace(match.target);
-      return;
-    }
-    _showRoute('404 NOT FOUND', 'This short link is unavailable or was never created.', 'Requested route: ' + p);
+    showScreen('route');
+    el('#route-title').textContent = '404 NOT FOUND';
+    el('#route-message').innerHTML = 'This short link does not exist.';
+    el('#route-meta').textContent = p;
   }
 
-  function _slug(l) { l = l || 8; return 'x' + Math.random().toString(36).slice(2, 2 + l); }
-
-  function _hasRoute(route, excludeId) {
-    for (var i = 0; i < _s.urls.length; i++) {
-      if (_s.urls[i].id === excludeId) continue;
-      if (_s.urls[i].route === route) return true;
+  /* ===== CRUD ===== */
+  function hasRoute(r, exId) {
+    for (var i = 0; i < state.urls.length; i++) {
+      if (state.urls[i].id !== exId && state.urls[i].route === r) return true;
     }
     return false;
   }
 
-  function _create() {
-    var ui = $('#url-input');
-    var si = $('#slug-input');
-    var ps = $('#prefix-select');
-    var li = $('#label-input');
-    var t = ui.value.trim();
-    if (!t) {
-      _toast('Enter target URL', 'error');
-      _log('URL creation failed: empty target', 'error', 'dash');
-      return;
-    }
-    if (!t.match(/^https?:\/\//i)) t = 'https://' + t;
-    var pr = ps.value;
-    var sl = si.value.trim() || _slug(8);
-    var route = _pathFrom(pr, sl);
-    if (_hasRoute(route)) {
-      _toast('This slug already exists', 'error');
-      _log('Slug conflict detected', 'warn', 'dash');
-      return;
-    }
-    _api('/api/links', {
-      method: 'POST',
-      body: { target: t, prefix: pr, slug: sl, label: li.value.trim() }
-    }, function(err, data) {
-      if (err) {
-        _toast('Could not create link', 'error');
-        _log('Create failed: ' + err.message, 'error', 'dash');
-        return;
+  function createLink() {
+    var t = el('#url-input').value.trim();
+    if (!t) { toast('Enter target URL', 'error'); return; }
+    if (!/^https?:\/\//i.test(t)) t = 'https://' + t;
+    var pr = el('#prefix-select').value;
+    var sl = el('#slug-input').value.trim() || slug(8);
+    var r = route(pr, sl);
+    if (isReservedRoute(r)) { toast('Reserved route', 'error'); return; }
+    if (hasRoute(r)) { toast('Slug exists', 'error'); return; }
+    xhr('POST', '/api/links', { target: t, prefix: pr, slug: sl, label: el('#label-input').value.trim() }, function(err, data) {
+      if (err) { toast('Create failed: ' + err.message, 'error'); return; }
+      var e = data.link;
+      e.time = normTime(e.time);
+      state.urls.unshift(e);
+      renderLinks();
+      updateStats();
+      var ra = el('#result-area');
+      var ru = el('#result-url');
+      try {
+        var h = new URL(e.short).host;
+        var pl = e.route.replace(/^\//, '');
+        ru.dataset.shortUrl = e.short;
+        ru.innerHTML = '<span class="url-domain">' + esc(h) + '/</span><span class="url-path">' + esc(pl.replace(/\/[^/]+$/, '/')) + '</span><span class="url-slug">' + esc(sl) + '</span>';
+      } catch(ex) {
+        ru.dataset.shortUrl = e.short;
+        ru.textContent = e.short;
       }
-      var entry = data.link;
-      entry.time = _normTime(entry.time);
-      _s.urls.unshift(entry);
-      _rend();
-      _upd();
-      var ra = $('#result-area');
-      var ru = $('#result-url');
-      var rt = $('#result-time');
-      var rh = $('#result-hash');
-      var short = entry.short;
-      var h = new URL(short).host;
-      var pl = entry.route.replace(/^\//, '');
-      ru.dataset.shortUrl = short;
-      ru.innerHTML = '<span class="url-domain">' + _esc(h) + '/</span><span class="url-path">' + _esc(pl.replace(/\/[^/]+$/, '/')) + '</span><span class="url-slug">' + _esc(sl) + '</span>';
-      rt.textContent = new Date(entry.time).toLocaleString();
-      rh.textContent = entry.hash || 'n/a';
-      ra.classList.add('show');
-      _log('URL forged: ' + short, 'success', 'dash');
-      _toast('URL forged successfully', 'success');
-      ui.value = '';
-      si.value = '';
-      ps.value = '';
-      li.value = '';
+      el('#result-time').textContent = new Date(e.time).toLocaleString();
+      el('#result-hash').textContent = e.hash || '';
+      ra.className = 'result-area show';
+      toast('URL created', 'success');
+      el('#url-input').value = '';
+      el('#slug-input').value = '';
+      el('#label-input').value = '';
     });
   }
 
-  function _showEditModal(entry) {
-    if (!entry) return;
-    $('#edit-id').value = entry.id;
-    $('#edit-target').value = entry.target || '';
-    $('#edit-slug').value = entry.slug || '';
-    $('#edit-prefix').value = entry.prefix || '';
-    $('#edit-label').value = entry.label || '';
-    $('#edit-preview').textContent = entry.short || _fullUrl(entry.prefix, entry.slug);
-    $('#edit-modal').classList.add('active');
+  function isReservedRoute(r) {
+    var res = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/favicon.svg', '/index.html'];
+    for (var i = 0; i < res.length; i++) {
+      if (r === res[i] || r.indexOf(res[i] + '/') === 0) return true;
+    }
+    return false;
   }
 
-  function _saveEdit() {
-    var id = parseInt($('#edit-id').value, 10);
-    var target = $('#edit-target').value.trim();
-    var slug = $('#edit-slug').value.trim();
-    var prefix = $('#edit-prefix').value;
-    var label = $('#edit-label').value.trim();
-    if (!target) { _toast('Target URL is required', 'error'); return; }
-    if (!target.match(/^https?:\/\//i)) target = 'https://' + target;
-    if (!slug) { _toast('Slug cannot be empty', 'error'); return; }
-    _api('/api/links/' + id, {
-      method: 'PUT',
-      body: { target: target, prefix: prefix, slug: slug, label: label }
-    }, function(err, data) {
-      if (err) {
-        _toast('Could not update link', 'error');
-        _log('Edit failed: ' + err.message, 'error', 'dash');
+  function doDelete(id) {
+    xhr('DELETE', '/api/links/' + id, null, function(err) {
+      if (err) { toast('Delete failed', 'error'); return; }
+      state.urls = state.urls.filter(function(l) { return l.id !== id; });
+      renderLinks();
+      updateStats();
+      toast('Deleted', 'info');
+    });
+  }
+
+  function doClearAll() {
+    if (state.urls.length === 0) return;
+    if (!confirm('Delete ALL links?')) return;
+    var done = 0;
+    var total = state.urls.length;
+    var hasErr = false;
+    for (var i = 0; i < state.urls.length; i++) {
+      (function(id) {
+        xhr('DELETE', '/api/links/' + id, null, function(err) {
+          done++;
+          if (err) hasErr = true;
+          if (done >= total) {
+            state.urls = [];
+            renderLinks();
+            updateStats();
+            el('#result-area').className = 'result-area';
+            toast(hasErr ? 'Partial clear' : 'All cleared', 'info');
+          }
+        });
+      })(state.urls[i].id);
+    }
+  }
+
+  function showEdit(id) {
+    for (var i = 0; i < state.urls.length; i++) {
+      if (state.urls[i].id === id) {
+        var e = state.urls[i];
+        el('#edit-id').value = e.id;
+        el('#edit-target').value = e.target || '';
+        el('#edit-slug').value = e.slug || '';
+        el('#edit-prefix').value = e.prefix || '';
+        el('#edit-label').value = e.label || '';
+        el('#edit-preview').textContent = e.short || (origin() + route(e.prefix, e.slug));
+        el('#edit-modal').className = 'modal active';
         return;
       }
-      for (var i = 0; i < _s.urls.length; i++) {
-        if (_s.urls[i].id === id) {
-          _s.urls[i] = data.link;
-          _s.urls[i].time = _normTime(_s.urls[i].time);
+    }
+  }
+
+  function saveEdit() {
+    var id = el('#edit-id').value;
+    var target = el('#edit-target').value.trim();
+    var slugVal = el('#edit-slug').value.trim();
+    var prefix = el('#edit-prefix').value;
+    var label = el('#edit-label').value.trim();
+    if (!target) { toast('Target required', 'error'); return; }
+    if (!/^https?:\/\//i.test(target)) target = 'https://' + target;
+    if (!slugVal) { toast('Slug required', 'error'); return; }
+    xhr('PUT', '/api/links/' + id, { target: target, prefix: prefix, slug: slugVal, label: label }, function(err, data) {
+      if (err) { toast('Update failed', 'error'); return; }
+      for (var i = 0; i < state.urls.length; i++) {
+        if (String(state.urls[i].id) === String(id)) {
+          state.urls[i] = data.link;
+          state.urls[i].time = normTime(state.urls[i].time);
           break;
         }
       }
-      _rend();
-      _upd();
-      $('#edit-modal').classList.remove('active');
-      _toast('Link updated', 'success');
-      _log('Updated short link', 'success', 'dash');
+      renderLinks();
+      updateStats();
+      el('#edit-modal').className = 'modal';
+      toast('Updated', 'success');
     });
   }
 
-  window._0edit = function(id) {
-    for (var i = 0; i < _s.urls.length; i++) {
-      if (_s.urls[i].id === id) { _showEditModal(_s.urls[i]); break; }
-    }
-  };
-
-  window._0openLink = function(url) {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  function _rend() {
-    var l = $('#url-list');
-    $('#link-count').textContent = _s.urls.length + ' active short URL' + (_s.urls.length !== 1 ? 's' : '');
-    if (_s.urls.length === 0) {
-      l.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><p>No forged links yet</p><span>Create your first short URL above</span></div>';
-      return;
-    }
-    var html = '';
-    for (var i = 0; i < _s.urls.length; i++) {
-      var u = _s.urls[i];
-      var idx = String(_s.urls.length - i).padStart(2, '0');
-      var shortJs = String(u.short).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\"/g, '\\"');
-      var targetEsc = _esc(u.target);
-      var shortEsc = _esc(u.short);
-      var labelEsc = _esc(u.label || '');
-      var labelMarkup = labelEsc ? '<div class="url-item-label">' + labelEsc + '</div>' : '';
-      html += '<div class="url-item" style="animation-delay:' + (i * 0.05) + 's">' +
-        '<span class="url-item-index">#' + idx + '</span>' +
-        '<div class="url-item-info">' +
-        '<div class="url-item-short">' + shortEsc + '</div>' +
-        '<div class="url-item-target">' + targetEsc + '</div>' +
-        labelMarkup +
-        '</div>' +
-        '<span class="url-item-time">' + _fmtTime(u.time) + '<br>' + (u.clicks || 0) + ' clicks</span>' +
-        '<div class="url-item-actions">' +
-        '<button class="url-item-btn" onclick="_0cpy(\'' + shortJs + '\')" title="Copy"><i class="fa-regular fa-copy"></i></button>' +
-        '<button class="url-item-btn" onclick="_0openLink(\'' + shortJs + '\')" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
-        '<button class="url-item-btn" onclick="_0edit(' + u.id + ')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
-        '<button class="url-item-btn" onclick="_0qr(\'' + shortJs + '\')" title="QR"><i class="fa-solid fa-qrcode"></i></button>' +
-        '<button class="url-item-btn delete" onclick="_0del(' + u.id + ')" title="Delete"><i class="fa-solid fa-trash"></i></button>' +
-        '</div></div>';
-    }
-    l.innerHTML = html;
-  }
-
-  window._0cpy = function(txt) {
+  function copyText(txt) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(function() {
-        _toast('Copied to clipboard', 'success');
-      }).catch(function() { _toast('Copy failed', 'error'); });
+      navigator.clipboard.writeText(txt).then(function() { toast('Copied', 'success'); }).catch(function() { toast('Copy failed', 'error'); });
     } else {
-      var ta = document.createElement('textarea');
-      ta.value = txt;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); _toast('Copied', 'success'); } catch (e) { _toast('Copy failed', 'error'); }
-      document.body.removeChild(ta);
+      var t = document.createElement('textarea');
+      t.value = txt;
+      t.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(t);
+      t.select();
+      try { document.execCommand('copy'); toast('Copied', 'success'); } catch(e) { toast('Copy failed', 'error'); }
+      document.body.removeChild(t);
     }
-  };
-
-  function _del(id) {
-    _api('/api/links/' + id, { method: 'DELETE' }, function(err) {
-      if (err) {
-        _toast('Delete failed', 'error');
-        _log('Delete failed: ' + err.message, 'error', 'dash');
-        return;
-      }
-      _s.urls = _s.urls.filter(function(item) { return item.id !== id; });
-      _rend();
-      _upd();
-      _toast('Link deleted', 'info');
-      _log('Link removed', 'warn', 'dash');
-    });
   }
 
-  window._0del = _del;
-
-  window._0qr = function(url) {
-    var mc = $('#qr-canvas-container');
-    var mt = $('#modal-url-text');
+  function showQR(url) {
+    var mc = el('#qr-canvas-container');
+    var mt = el('#modal-url-text');
     mc.innerHTML = '';
     mt.textContent = url;
-    var size = 200;
-    var canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    var ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, size, size);
-    ctx.fillStyle = '#000';
-    var cellSize = size / 25;
-    var pattern = [];
+    var sz = 200;
+    var cv = document.createElement('canvas');
+    cv.width = sz;
+    cv.height = sz;
+    var cx = cv.getContext('2d');
+    cx.fillStyle = '#fff';
+    cx.fillRect(0, 0, sz, sz);
+    cx.fillStyle = '#000';
+    var cs = sz / 25;
+    var pat = [];
     var i, j;
-    for (i = 0; i < 25; i++) {
-      pattern[i] = [];
-      for (j = 0; j < 25; j++) pattern[i][j] = Math.random() > 0.5 ? 1 : 0;
-    }
-    function drawFinder(x, y) {
-      var ii, jj;
-      for (ii = 0; ii < 7; ii++) {
-        for (jj = 0; jj < 7; jj++) {
-          if (ii === 0 || ii === 6 || jj === 0 || jj === 6 || (ii >= 2 && ii <= 4 && jj >= 2 && jj <= 4)) {
-            pattern[x + ii][y + jj] = 1;
-          } else {
-            pattern[x + ii][y + jj] = 0;
-          }
-        }
+    for (i = 0; i < 25; i++) { pat[i] = []; for (j = 0; j < 25; j++) pat[i][j] = Math.random() > 0.5 ? 1 : 0; }
+    function finder(x, y) {
+      for (var ii = 0; ii < 7; ii++) for (var jj = 0; jj < 7; jj++) {
+        if (ii === 0 || ii === 6 || jj === 0 || jj === 6 || (ii >= 2 && ii <= 4 && jj >= 2 && jj <= 4)) pat[x + ii][y + jj] = 1;
+        else pat[x + ii][y + jj] = 0;
       }
     }
-    drawFinder(0, 0);
-    drawFinder(18, 0);
-    drawFinder(0, 18);
-    for (i = 0; i < 25; i++) {
-      for (j = 0; j < 25; j++) {
-        if (pattern[i][j]) ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
-      }
-    }
-    ctx.fillStyle = '#333';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(url.slice(0, 30), size / 2, size - 4);
-    mc.appendChild(canvas);
-    $('#qr-modal').classList.add('active');
-  };
-
-  function _upd() {
-    var totalClicks = 0;
-    var totalLen = 0;
-    for (var i = 0; i < _s.urls.length; i++) {
-      totalClicks += _s.urls[i].clicks || 0;
-      totalLen += String(_s.urls[i].slug || '').length;
-    }
-    var avgLen = _s.urls.length ? (totalLen / _s.urls.length).toFixed(1) : 0;
-    var entropy = _s.urls.length ? _esc(_s.urls[0].slug || '').length : 0;
-    $('#stat-total').textContent = _s.urls.length;
-    $('#stat-clicks').textContent = totalClicks;
-    $('#stat-avg').textContent = avgLen;
-    $('#stat-entropy').textContent = entropy;
+    finder(0, 0); finder(18, 0); finder(0, 18);
+    for (i = 0; i < 25; i++) for (j = 0; j < 25; j++) if (pat[i][j]) cx.fillRect(j * cs, i * cs, cs, cs);
+    cx.fillStyle = '#333'; cx.font = '8px monospace'; cx.textAlign = 'center';
+    cx.fillText(url.slice(0, 30), sz / 2, sz - 4);
+    mc.appendChild(cv);
+    el('#qr-modal').className = 'modal active';
   }
 
-  function _rnd() {
-    $('#slug-input').value = _slug(10);
-    _log('Random slug generated', 'info', 'dash');
+  function randomSlug() {
+    el('#slug-input').value = slug(10);
   }
 
-  function _clr() {
-    if (_s.urls.length === 0) return;
-    if (!confirm('Delete all forged links?')) return;
-    var remaining = _s.urls.length;
-    var done = 0;
-    var hasErr = false;
-    for (var i = 0; i < _s.urls.length; i++) {
-      (function(idx) {
-        _api('/api/links/' + _s.urls[idx].id, { method: 'DELETE' }, function(err) {
-          done++;
-          if (err) hasErr = true;
-          if (done >= remaining) {
-            _s.urls = [];
-            _rend();
-            _upd();
-            $('#result-area').classList.remove('show');
-            if (hasErr) { _toast('Could not clear all links', 'error'); }
-            else { _toast('All links cleared', 'info'); _log('All links purged', 'warn', 'dash'); }
-          }
-        });
-      })(i);
-    }
-  }
+  /* ===== EXPOSE FOR ONCLICK ===== */
+  window._cpy = copyText;
+  window._del = doDelete;
+  window._edit = showEdit;
+  window._qr = showQR;
 
-  function _out() {
-    _s.auth = false;
-    _s.user = null;
-    _s.token = '';
-    _s.urls = [];
-    _saveTk();
-    _showScreen('login');
-    $('#login-user').value = '';
-    $('#login-pass').value = '';
-    $('#result-area').classList.remove('show');
-    _log('Session terminated', 'warn');
-    _toast('Logged out', 'info');
-  }
-
-  document.addEventListener('contextmenu', function(e) {
-    if (e.target.closest('.vault-input, .result-url, .console-log, .console-body')) {
-      e.preventDefault();
-    }
-  });
-
-  $('#login-pass').addEventListener('copy', function(e) { e.preventDefault(); });
-
-  $('#route-home').addEventListener('click', function() {
-    window.history.replaceState({}, '', '/');
-    window.location.reload();
-  });
-
-  $('#btn-login').addEventListener('click', _auth);
-  $('#login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') _auth(); });
-  $('#login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') _auth(); });
-  $('#toggle-pass').addEventListener('click', function() {
-    var inp = $('#login-pass');
+  /* ===== BIND EVENTS ===== */
+  el('#btn-login').addEventListener('click', doLogin);
+  el('#login-user').addEventListener('keydown', function(e) { if (e.keyCode === 13 || e.key === 'Enter') doLogin(); });
+  el('#login-pass').addEventListener('keydown', function(e) { if (e.keyCode === 13 || e.key === 'Enter') doLogin(); });
+  el('#toggle-pass').addEventListener('click', function() {
+    var inp = el('#login-pass');
     var icon = this.querySelector('i');
     if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash'; }
     else { inp.type = 'password'; icon.className = 'fa-solid fa-eye'; }
   });
-  $('#btn-create').addEventListener('click', _create);
-  $('#btn-random').addEventListener('click', _rnd);
-  $('#btn-clear').addEventListener('click', _clr);
-  $('#btn-logout').addEventListener('click', _out);
-  $('#btn-save-edit').addEventListener('click', _saveEdit);
-  $('#btn-cancel-edit').addEventListener('click', function() { $('#edit-modal').classList.remove('active'); });
-  $('#edit-modal-close').addEventListener('click', function() { $('#edit-modal').classList.remove('active'); });
-  $('#edit-modal').addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-backdrop')) $('#edit-modal').classList.remove('active');
-  });
-  $('#edit-slug').addEventListener('input', function() {
-    var prefix = $('#edit-prefix').value;
-    var slug = $('#edit-slug').value.trim();
-    $('#edit-preview').textContent = _fullUrl(prefix, slug || 'preview');
-  });
-  $('#edit-prefix').addEventListener('change', function() {
-    var prefix = $('#edit-prefix').value;
-    var slug = $('#edit-slug').value.trim();
-    $('#edit-preview').textContent = _fullUrl(prefix, slug || 'preview');
-  });
-  $('#btn-copy').addEventListener('click', function() {
-    var url = $('#result-url').dataset.shortUrl || $('#result-url').textContent.trim();
-    if (url) _0cpy(url);
-  });
-  $('#btn-open').addEventListener('click', function() {
-    var url = $('#result-url').dataset.shortUrl || $('#result-url').textContent.trim();
-    if (url) window.open(url, '_blank');
-  });
-  $('#btn-qr').addEventListener('click', function() {
-    var url = $('#result-url').dataset.shortUrl || $('#result-url').textContent.trim();
-    if (url) _0qr(url);
-  });
-  $('#modal-close').addEventListener('click', function() { $('#qr-modal').classList.remove('active'); });
-  $('#qr-modal').addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-backdrop')) $('#qr-modal').classList.remove('active');
-  });
+  el('#btn-create').addEventListener('click', createLink);
+  el('#btn-random').addEventListener('click', randomSlug);
+  el('#btn-clear').addEventListener('click', doClearAll);
+  el('#btn-logout').addEventListener('click', doLogout);
+  el('#btn-save-edit').addEventListener('click', saveEdit);
+  el('#btn-cancel-edit').addEventListener('click', function() { el('#edit-modal').className = 'modal'; });
+  el('#edit-modal-close').addEventListener('click', function() { el('#edit-modal').className = 'modal'; });
+  el('#edit-modal').addEventListener('click', function(e) { if (e.target.classList.contains('modal-backdrop')) el('#edit-modal').className = 'modal'; });
+  el('#edit-slug').addEventListener('input', function() { el('#edit-preview').textContent = origin() + route(el('#edit-prefix').value, el('#edit-slug').value.trim() || 'preview'); });
+  el('#edit-prefix').addEventListener('change', function() { el('#edit-preview').textContent = origin() + route(el('#edit-prefix').value, el('#edit-slug').value.trim() || 'preview'); });
+  el('#btn-copy').addEventListener('click', function() { var u = el('#result-url').dataset.shortUrl; if (u) copyText(u); });
+  el('#btn-open').addEventListener('click', function() { var u = el('#result-url').dataset.shortUrl; if (u) window.open(u, '_blank'); });
+  el('#btn-qr').addEventListener('click', function() { var u = el('#result-url').dataset.shortUrl; if (u) showQR(u); });
+  el('#modal-close').addEventListener('click', function() { el('#qr-modal').className = 'modal'; });
+  el('#qr-modal').addEventListener('click', function(e) { if (e.target.classList.contains('modal-backdrop')) el('#qr-modal').className = 'modal'; });
+  el('#route-home').addEventListener('click', function() { window.history.replaceState({}, '', '/'); location.reload(); });
 
-  _log('System ready', 'info');
-  _autoLogin();
-  _route();
-  window.addEventListener('popstate', _route);
+  /* ===== INIT ===== */
+  autoLogin();
+  handleRoute();
+  window.addEventListener('popstate', handleRoute);
 })();
 </script>
 </body>
