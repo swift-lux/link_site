@@ -829,7 +829,10 @@ function createLink(){
     try{
       var h=new URL(e.short).host;
       var pl=e.route.replace(/^\//,'');
-      ru.innerHTML='<span class="url-domain">'+esc(h)+'/</span><span class="url-path">'+esc(pl.replace(/\/[^/]+$/,'/'))+'</span><span class="url-slug">'+esc(sl)+'</span>';
+      var li=pl.lastIndexOf('/');
+      var pathPart=li>-1?pl.substring(0,li+1):'';
+      var slugPart=li>-1?pl.substring(li+1):pl;
+      ru.innerHTML='<span class="url-domain">'+esc(h)+'/</span><span class="url-path">'+esc(pathPart)+'</span><span class="url-slug">'+esc(slugPart)+'</span>';
     }catch(ex){ru.textContent=e.short;}
     document.getElementById('result-time').textContent=new Date(e.time).toLocaleString();
     document.getElementById('result-hash').textContent=e.hash||'';
@@ -904,6 +907,13 @@ function saveEdit(){
   });
 }
 
+function openURL(url){
+  if(!url)return;
+  var a=document.createElement('a');
+  a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
 function copyText(txt){
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(function(){toast('Copied','success');}).catch(function(){fallbackCopy(txt);});
@@ -963,7 +973,7 @@ document.getElementById('edit-slug').addEventListener('input',function(){documen
 document.getElementById('edit-prefix').addEventListener('change',function(){document.getElementById('edit-preview').textContent=window.location.origin+mkRoute(document.getElementById('edit-prefix').value,document.getElementById('edit-slug').value.trim()||'preview');});
 
 document.getElementById('btn-copy').addEventListener('click',function(){if(lastShort)copyText(lastShort);});
-document.getElementById('btn-open').addEventListener('click',function(){if(lastShort)window.open(lastShort,'_blank');});
+document.getElementById('btn-open').addEventListener('click',function(){if(lastShort)openURL(lastShort);});
 document.getElementById('btn-qr').addEventListener('click',function(){if(lastShort)showQR(lastShort);});
 
 document.getElementById('url-list').addEventListener('click',function(e){
@@ -975,7 +985,7 @@ document.getElementById('url-list').addEventListener('click',function(e){
   var link=S.urls[i];
   if(!link)return;
   if(act==='copy')copyText(link.short);
-  else if(act==='open')window.open(link.short,'_blank');
+  else if(act==='open')openURL(link.short);
   else if(act==='edit')showEdit(i);
   else if(act==='qr')showQR(link.short);
   else if(act==='del'){
@@ -1130,6 +1140,34 @@ window.adduser=function(username,password,displayName){
     if(err){console.error('[Vault] Error:',err.message);return;}
     console.log('[Vault] User created:',JSON.stringify(data.user));
   });
+};
+
+window.help=function(){
+  console.log('%c[SVCODE URL Vault] Console Commands','color:#00e5ff;font-weight:bold;font-size:13px');
+  console.log('%c  help()          — Show this help message','color:#b967ff');
+  console.log('%c  helpadmin()     — Show admin commands','color:#b967ff');
+  console.log('%c  adduser(u,p,d)  — Create new user (admin only)','color:#b967ff');
+};
+
+window.helpadmin=function(){
+  if(!S.token||S.role!=='admin'){console.error('[Vault] Admin access required');return;}
+  console.log('%c[SVCODE URL Vault] Admin Commands','color:#00e5ff;font-weight:bold;font-size:13px');
+  console.log('%c  adduser("username","password","Display Name")','color:#ffb800');
+  console.log('%c    — Create a new user account','color:#7a7a9a');
+  console.log('%c  help()','color:#ffb800');
+  console.log('%c    — Show general commands','color:#7a7a9a');
+  console.log('%c  helpadmin()','color:#ffb800');
+  console.log('%c    — Show this admin help','color:#7a7a9a');
+  console.log('%c','color:#7a7a9a');
+  console.log('%cAdmin Panel:','color:#00e5ff;font-weight:bold');
+  console.log('%c  Click the shield icon in the nav bar to open','color:#7a7a9a');
+  console.log('%c  — View all users and their links','color:#7a7a9a');
+  console.log('%c  — Hide/Unhide any link (eye icon)','color:#7a7a9a');
+  console.log('%c  — Delete any link (trash icon)','color:#7a7a9a');
+  console.log('%c  — Delete any non-admin user (trash icon)','color:#7a7a9a');
+  console.log('%c','color:#7a7a9a');
+  console.log('%cShort URL Prefixes:','color:#00e5ff;font-weight:bold');
+  console.log('%c  api/ v1/ v2/ | cdn/ static/ assets/ | s/ r/ go/ x/ d/ | link/ links/ ref/ out/ to/ | p/ f/ m/ w/ t/ | dev/ app/ hub/ kit/ sub/','color:#b967ff');
 };
 
 })();
