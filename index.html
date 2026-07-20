@@ -406,7 +406,6 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
                   <option value="sub/">sub/</option>
                   <option value="r/">r/</option>
                   <option value="go/">go/</option>
-                  <option value="api/">api/</option>
                   <option value="v1/">v1/</option>
                   <option value="cdn/">cdn/</option>
                   <option value="ref/">ref/</option>
@@ -561,7 +560,6 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
               <option value="sub/">sub/</option>
               <option value="r/">r/</option>
               <option value="go/">go/</option>
-              <option value="api/">api/</option>
               <option value="v1/">v1/</option>
               <option value="cdn/">cdn/</option>
               <option value="ref/">ref/</option>
@@ -595,57 +593,55 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
 </div>
 <script>
 (function() {
-  'use strict';
-
-  const state = {
+  var _s = {
     auth: false,
     user: null,
-    token: localStorage.getItem('_sv_session') || '',
+    token: localStorage.getItem('_sv') || '',
     urls: [],
     lastAct: Date.now()
   };
 
-  const $ = function(sel, ctx) { ctx = ctx || document; return ctx.querySelector(sel); };
+  var $ = function(sel, ctx) { ctx = ctx || document; return ctx.querySelector(sel); };
 
-  function _0baseUrl() {
+  function _baseUrl() {
     return window.location.origin || (window.location.protocol + '//' + window.location.host);
   }
 
-  function _0pathFromPrefix(prefix, slug) {
+  function _pathFrom(prefix, slug) {
     var p = String(prefix || '').trim().replace(/^\/+|\/+$/g, '');
     var s = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
     if (!s) return '/';
     return '/' + (p ? p + '/' : '') + s;
   }
 
-  function _0fullShortUrl(prefix, slug) {
-    return _0baseUrl() + _0pathFromPrefix(prefix, slug);
+  function _fullUrl(prefix, slug) {
+    return _baseUrl() + _pathFrom(prefix, slug);
   }
 
-  function _0currentPath() {
+  function _curPath() {
     var hash = (window.location.hash || '').replace(/^#/, '').trim();
-    if (hash && hash.startsWith('/')) return hash;
+    if (hash && hash.charAt(0) === '/') return hash;
     if (hash) return '/' + hash;
     return window.location.pathname || '/';
   }
 
-  function _0saveToken() {
-    if (state.token) localStorage.setItem('_sv_session', state.token);
-    else localStorage.removeItem('_sv_session');
+  function _saveTk() {
+    if (_s.token) localStorage.setItem('_sv', _s.token);
+    else localStorage.removeItem('_sv');
   }
 
-  function _0normalizeTime(value) {
-    if (!value) return new Date();
-    var d = value instanceof Date ? value : new Date(value);
+  function _normTime(v) {
+    if (!v) return new Date();
+    var d = v instanceof Date ? v : new Date(v);
     return isNaN(d.getTime()) ? new Date() : d;
   }
 
-  function _0formatTime(value) {
-    var d = _0normalizeTime(value);
+  function _fmtTime(v) {
+    var d = _normTime(v);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  function _0esc(v) {
+  function _esc(v) {
     return String(v == null ? '' : v)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -654,12 +650,12 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       .replace(/'/g, '&#39;');
   }
 
-  function _0xtm(d) {
+  function _tm(d) {
     d = d || new Date();
     return d.toTimeString().slice(0, 8);
   }
 
-  function _0showScreen(name) {
+  function _showScreen(name) {
     $('#login-screen').classList.remove('active');
     $('#route-screen').classList.remove('active');
     $('#dashboard-screen').classList.remove('active');
@@ -668,14 +664,14 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     if (name === 'dashboard') $('#dashboard-screen').classList.add('active');
   }
 
-  function _0showRouteScreen(title, message, meta) {
-    _0showScreen('route');
+  function _showRoute(title, msg, meta) {
+    _showScreen('route');
     $('#route-title').textContent = title;
-    $('#route-message').innerHTML = message;
+    $('#route-message').innerHTML = msg;
     $('#route-meta').textContent = meta || '';
   }
 
-  function _0log(msg, type, target) {
+  function _log(msg, type, target) {
     type = type || 'info';
     target = target || 'login';
     var c = target === 'login' ? $('#login-log') : $('#console-body');
@@ -684,16 +680,16 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     ln.className = target === 'login' ? 'log-line' : 'console-line';
     var tc = { info: 'info', warn: 'warn', error: 'error', success: 'success' }[type] || 'info';
     if (target === 'login') {
-      ln.innerHTML = '<span class="log-time">[' + _0xtm() + ']</span> <span class="log-type ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
+      ln.innerHTML = '<span class="log-time">[' + _tm() + ']</span> <span class="log-type ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
     } else {
-      ln.innerHTML = '<span class="ts">' + _0xtm() + '</span> <span class="lvl ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
+      ln.innerHTML = '<span class="ts">' + _tm() + '</span> <span class="lvl ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
     }
     c.appendChild(ln);
     c.scrollTop = c.scrollHeight;
     while (c.children.length > 60) c.removeChild(c.firstChild);
   }
 
-  function _0toast(msg, type) {
+  function _toast(msg, type) {
     type = type || 'info';
     var tc = $('#toast-container');
     var el = document.createElement('div');
@@ -704,106 +700,123 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     setTimeout(function() { el.remove(); }, 3900);
   }
 
-  async function _0api(path, options) {
-    options = options || {};
-    var headers = options.headers || {};
-    if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
-      headers['Content-Type'] = 'application/json';
+  function _api(path, opts, cb) {
+    opts = opts || {};
+    cb = cb || function() {};
+    var xhr = new XMLHttpRequest();
+    var method = opts.method || 'GET';
+    xhr.open(method, path, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (opts.json) {
+      xhr.setRequestHeader('Content-Type', 'application/json');
     }
-    if (state.token) headers.Authorization = state.token;
-    var res = await fetch(path, { method: options.method || 'GET', headers: headers, body: options.body });
-    var text = await res.text();
-    var data = {};
-    try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { raw: text }; }
-    if (!res.ok) throw new Error(data.error || 'Request failed');
-    return data;
+    if (_s.token) {
+      xhr.setRequestHeader('Authorization', _s.token);
+    }
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) return;
+      var data = {};
+      try { data = xhr.responseText ? JSON.parse(xhr.responseText) : {}; } catch (e) { data = { raw: xhr.responseText }; }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        cb(null, data);
+      } else {
+        cb(new Error(data.error || 'Request failed'), data);
+      }
+    };
+    xhr.onerror = function() { cb(new Error('Network error')); };
+    if (opts.json) {
+      xhr.send(typeof opts.json === 'string' ? opts.json : JSON.stringify(opts.json));
+    } else {
+      xhr.send(null);
+    }
   }
 
-  async function _0loadLinks() {
-    try {
-      var data = await _0api('/api/links');
-      state.urls = Array.isArray(data.links) ? data.links : [];
-      state.urls.forEach(function(item) { item.time = _0normalizeTime(item.time); });
-      _0rend();
-      _0upd();
-      _0log('Links synchronized', 'success', 'dash');
-    } catch (e) {
-      _0log('Sync failed: ' + e.message, 'warn', 'dash');
-    }
+  function _loadLinks() {
+    _api('/api/links', {}, function(err, data) {
+      if (err) {
+        _log('Sync failed: ' + err.message, 'warn', 'dash');
+        return;
+      }
+      _s.urls = Array.isArray(data.links) ? data.links : [];
+      _s.urls.forEach(function(item) { item.time = _normTime(item.time); });
+      _rend();
+      _upd();
+      _log('Links synchronized', 'success', 'dash');
+    });
   }
 
-  async function _0auth() {
+  function _auth() {
     var u = $('#login-user').value.trim();
     var p = $('#login-pass').value;
     if (!u || !p) {
-      _0toast('Enter credentials', 'error');
-      _0log('Missing credentials', 'warn');
+      _toast('Enter credentials', 'error');
+      _log('Missing credentials', 'warn');
       return;
     }
-    try {
-      var data = await _0api('/api/auth', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
-      state.auth = true;
-      state.user = data.user;
-      state.token = data.token;
-      _0saveToken();
-      _0log('Authentication successful', 'success');
-      _0toast('Access granted', 'success');
-      await _0loadLinks();
-      _0showScreen('dashboard');
-      _0log('Dashboard loaded', 'success', 'dash');
-    } catch (e) {
-      _0log('Auth failed: ' + e.message, 'error');
-      _0toast('Invalid credentials', 'error');
-      var pn = $('.login-panel');
-      if (pn) {
-        pn.style.animation = 'none';
-        pn.offsetHeight;
-        pn.style.animation = 'panelEnter 0.6s ease, shake 0.6s ease';
+    var body = JSON.stringify({ username: u, password: p });
+    _api('/api/auth', { method: 'POST', json: body }, function(err, data) {
+      if (err) {
+        _log('Auth failed: ' + err.message, 'error');
+        _toast('Invalid credentials', 'error');
+        var pn = $('.login-panel');
+        if (pn) {
+          pn.style.animation = 'none';
+          pn.offsetHeight;
+          pn.style.animation = 'panelEnter 0.6s ease, shake 0.6s ease';
+        }
+        return;
       }
-    }
+      _s.auth = true;
+      _s.user = data.user;
+      _s.token = data.token;
+      _saveTk();
+      _log('Authentication successful', 'success');
+      _toast('Access granted', 'success');
+      _loadLinks();
+      _showScreen('dashboard');
+      _log('Dashboard loaded', 'success', 'dash');
+    });
   }
 
-  async function _0autoLogin() {
-    if (!state.token) {
-      _0showScreen('login');
+  function _autoLogin() {
+    if (!_s.token) {
+      _showScreen('login');
       return;
     }
-    try {
-      var data = await _0api('/api/me');
-      state.auth = true;
-      state.user = data.user;
-      state.urls = Array.isArray(data.links) ? data.links : [];
-      state.urls.forEach(function(item) { item.time = _0normalizeTime(item.time); });
-      _0showScreen('dashboard');
-      _0log('Session restored', 'success');
-      _0toast('Welcome back', 'success');
-      _0rend();
-      _0upd();
-    } catch (e) {
-      state.token = '';
-      _0saveToken();
-      _0showScreen('login');
-      _0log('Session expired', 'warn');
-    }
+    _api('/api/me', {}, function(err, data) {
+      if (err) {
+        _s.token = '';
+        _saveTk();
+        _showScreen('login');
+        _log('Session expired', 'warn');
+        return;
+      }
+      _s.auth = true;
+      _s.user = data.user;
+      _s.urls = Array.isArray(data.links) ? data.links : [];
+      _s.urls.forEach(function(item) { item.time = _normTime(item.time); });
+      _showScreen('dashboard');
+      _log('Session restored', 'success');
+      _toast('Welcome back', 'success');
+      _rend();
+      _upd();
+    });
   }
 
-  function _0route() {
-    var path = _0currentPath();
-    if (!path || path === '/' || path === '/index.html' || path === '/index.htm') {
-      if (state.auth) _0showScreen('dashboard');
-      else _0showScreen('login');
+  function _route() {
+    var p = _curPath();
+    if (!p || p === '/' || p === '/index.html' || p === '/index.htm') {
+      if (_s.auth) _showScreen('dashboard');
+      else _showScreen('login');
       return;
     }
-    if (path === '/404' || path === '/login') {
-      _0showRouteScreen('404 NOT FOUND', 'The requested route could not be resolved.', 'Requested route: ' + path);
+    if (p === '/404' || p === '/login') {
+      _showRoute('404 NOT FOUND', 'The requested route could not be resolved.', 'Requested route: ' + p);
       return;
     }
     var match = null;
-    for (var i = 0; i < state.urls.length; i++) {
-      if (state.urls[i].route === path) {
-        match = state.urls[i];
-        break;
-      }
+    for (var i = 0; i < _s.urls.length; i++) {
+      if (_s.urls[i].route === p) { match = _s.urls[i]; break; }
     }
     if (match && match.target) {
       match.clicks = (match.clicks || 0) + 1;
@@ -811,122 +824,121 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       window.location.replace(match.target);
       return;
     }
-    _0showRouteScreen('404 NOT FOUND', 'This short link is unavailable or was never created.', 'Requested route: ' + path);
+    _showRoute('404 NOT FOUND', 'This short link is unavailable or was never created.', 'Requested route: ' + p);
   }
 
-  function _0slug(l) { l = l || 8; return 'x' + Math.random().toString(36).slice(2, 2 + l); }
+  function _slug(l) { l = l || 8; return 'x' + Math.random().toString(36).slice(2, 2 + l); }
 
-  function _0hasRoute(route, excludeId) {
-    for (var i = 0; i < state.urls.length; i++) {
-      if (state.urls[i].id === excludeId) continue;
-      if (state.urls[i].route === route) return true;
+  function _hasRoute(route, excludeId) {
+    for (var i = 0; i < _s.urls.length; i++) {
+      if (_s.urls[i].id === excludeId) continue;
+      if (_s.urls[i].route === route) return true;
     }
     return false;
   }
 
-  async function _0create() {
+  function _create() {
     var ui = $('#url-input');
     var si = $('#slug-input');
     var ps = $('#prefix-select');
     var li = $('#label-input');
     var t = ui.value.trim();
     if (!t) {
-      _0toast('Enter target URL', 'error');
-      _0log('URL creation failed: empty target', 'error', 'dash');
+      _toast('Enter target URL', 'error');
+      _log('URL creation failed: empty target', 'error', 'dash');
       return;
     }
     if (!t.match(/^https?:\/\//i)) t = 'https://' + t;
     var pr = ps.value;
-    var sl = si.value.trim() || _0slug(8);
-    var route = _0pathFromPrefix(pr, sl);
-    if (_0hasRoute(route)) {
-      _0toast('This slug already exists', 'error');
-      _0log('Slug conflict detected', 'warn', 'dash');
+    var sl = si.value.trim() || _slug(8);
+    var route = _pathFrom(pr, sl);
+    if (_hasRoute(route)) {
+      _toast('This slug already exists', 'error');
+      _log('Slug conflict detected', 'warn', 'dash');
       return;
     }
-    try {
-      var data = await _0api('/api/links', { method: 'POST', body: JSON.stringify({ target: t, prefix: pr, slug: sl, label: li.value.trim() }) });
+    _api('/api/links', {
+      method: 'POST',
+      json: { target: t, prefix: pr, slug: sl, label: li.value.trim() }
+    }, function(err, data) {
+      if (err) {
+        _toast('Could not create link', 'error');
+        _log('Create failed: ' + err.message, 'error', 'dash');
+        return;
+      }
       var entry = data.link;
-      entry.time = _0normalizeTime(entry.time);
-      state.urls.unshift(entry);
-      _0rend();
-      _0upd();
+      entry.time = _normTime(entry.time);
+      _s.urls.unshift(entry);
+      _rend();
+      _upd();
       var ra = $('#result-area');
       var ru = $('#result-url');
       var rt = $('#result-time');
       var rh = $('#result-hash');
       var short = entry.short;
-      var host = new URL(short).host;
-      var pathLabel = entry.route.replace(/^\//, '');
+      var h = new URL(short).host;
+      var pl = entry.route.replace(/^\//, '');
       ru.dataset.shortUrl = short;
-      ru.innerHTML = '<span class="url-domain">' + _0esc(host) + '/</span><span class="url-path">' + _0esc(pathLabel.replace(/\/[^/]+$/, '/')) + '</span><span class="url-slug">' + _0esc(sl) + '</span>';
+      ru.innerHTML = '<span class="url-domain">' + _esc(h) + '/</span><span class="url-path">' + _esc(pl.replace(/\/[^/]+$/, '/')) + '</span><span class="url-slug">' + _esc(sl) + '</span>';
       rt.textContent = new Date(entry.time).toLocaleString();
       rh.textContent = entry.hash || 'n/a';
       ra.classList.add('show');
-      _0log('URL forged: ' + short, 'success', 'dash');
-      _0toast('URL forged successfully', 'success');
+      _log('URL forged: ' + short, 'success', 'dash');
+      _toast('URL forged successfully', 'success');
       ui.value = '';
       si.value = '';
       ps.value = '';
       li.value = '';
-    } catch (e) {
-      _0toast('Could not create link', 'error');
-      _0log('Create failed: ' + e.message, 'error', 'dash');
-    }
+    });
   }
 
-  function _0showEditModal(entry) {
+  function _showEditModal(entry) {
     if (!entry) return;
     $('#edit-id').value = entry.id;
     $('#edit-target').value = entry.target || '';
     $('#edit-slug').value = entry.slug || '';
     $('#edit-prefix').value = entry.prefix || '';
     $('#edit-label').value = entry.label || '';
-    $('#edit-preview').textContent = entry.short || _0fullShortUrl(entry.prefix, entry.slug);
+    $('#edit-preview').textContent = entry.short || _fullUrl(entry.prefix, entry.slug);
     $('#edit-modal').classList.add('active');
   }
 
-  async function _0saveEditedLink() {
+  function _saveEdit() {
     var id = parseInt($('#edit-id').value, 10);
     var target = $('#edit-target').value.trim();
     var slug = $('#edit-slug').value.trim();
     var prefix = $('#edit-prefix').value;
     var label = $('#edit-label').value.trim();
-    if (!target) {
-      _0toast('Target URL is required', 'error');
-      return;
-    }
+    if (!target) { _toast('Target URL is required', 'error'); return; }
     if (!target.match(/^https?:\/\//i)) target = 'https://' + target;
-    if (!slug) {
-      _0toast('Slug cannot be empty', 'error');
-      return;
-    }
-    try {
-      var data = await _0api('/api/links/' + id, { method: 'PUT', body: JSON.stringify({ target: target, prefix: prefix, slug: slug, label: label }) });
-      for (var i = 0; i < state.urls.length; i++) {
-        if (state.urls[i].id === id) {
-          state.urls[i] = data.link;
-          state.urls[i].time = _0normalizeTime(state.urls[i].time);
+    if (!slug) { _toast('Slug cannot be empty', 'error'); return; }
+    _api('/api/links/' + id, {
+      method: 'PUT',
+      json: { target: target, prefix: prefix, slug: slug, label: label }
+    }, function(err, data) {
+      if (err) {
+        _toast('Could not update link', 'error');
+        _log('Edit failed: ' + err.message, 'error', 'dash');
+        return;
+      }
+      for (var i = 0; i < _s.urls.length; i++) {
+        if (_s.urls[i].id === id) {
+          _s.urls[i] = data.link;
+          _s.urls[i].time = _normTime(_s.urls[i].time);
           break;
         }
       }
-      _0rend();
-      _0upd();
+      _rend();
+      _upd();
       $('#edit-modal').classList.remove('active');
-      _0toast('Link updated', 'success');
-      _0log('Updated short link', 'success', 'dash');
-    } catch (e) {
-      _0toast('Could not update link', 'error');
-      _0log('Edit failed: ' + e.message, 'error', 'dash');
-    }
+      _toast('Link updated', 'success');
+      _log('Updated short link', 'success', 'dash');
+    });
   }
 
   window._0edit = function(id) {
-    for (var i = 0; i < state.urls.length; i++) {
-      if (state.urls[i].id === id) {
-        _0showEditModal(state.urls[i]);
-        break;
-      }
+    for (var i = 0; i < _s.urls.length; i++) {
+      if (_s.urls[i].id === id) { _showEditModal(_s.urls[i]); break; }
     }
   };
 
@@ -934,21 +946,21 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  function _0rend() {
+  function _rend() {
     var l = $('#url-list');
-    $('#link-count').textContent = state.urls.length + ' active short URL' + (state.urls.length !== 1 ? 's' : '');
-    if (state.urls.length === 0) {
+    $('#link-count').textContent = _s.urls.length + ' active short URL' + (_s.urls.length !== 1 ? 's' : '');
+    if (_s.urls.length === 0) {
       l.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><p>No forged links yet</p><span>Create your first short URL above</span></div>';
       return;
     }
     var html = '';
-    for (var i = 0; i < state.urls.length; i++) {
-      var u = state.urls[i];
-      var idx = String(state.urls.length - i).padStart(2, '0');
+    for (var i = 0; i < _s.urls.length; i++) {
+      var u = _s.urls[i];
+      var idx = String(_s.urls.length - i).padStart(2, '0');
       var shortJs = String(u.short).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\"/g, '\\"');
-      var targetEsc = _0esc(u.target);
-      var shortEsc = _0esc(u.short);
-      var labelEsc = _0esc(u.label || '');
+      var targetEsc = _esc(u.target);
+      var shortEsc = _esc(u.short);
+      var labelEsc = _esc(u.label || '');
       var labelMarkup = labelEsc ? '<div class="url-item-label">' + labelEsc + '</div>' : '';
       html += '<div class="url-item" style="animation-delay:' + (i * 0.05) + 's">' +
         '<span class="url-item-index">#' + idx + '</span>' +
@@ -957,7 +969,7 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
         '<div class="url-item-target">' + targetEsc + '</div>' +
         labelMarkup +
         '</div>' +
-        '<span class="url-item-time">' + _0formatTime(u.time) + '<br>' + (u.clicks || 0) + ' clicks</span>' +
+        '<span class="url-item-time">' + _fmtTime(u.time) + '<br>' + (u.clicks || 0) + ' clicks</span>' +
         '<div class="url-item-actions">' +
         '<button class="url-item-btn" onclick="_0cpy(\'' + shortJs + '\')" title="Copy"><i class="fa-regular fa-copy"></i></button>' +
         '<button class="url-item-btn" onclick="_0openLink(\'' + shortJs + '\')" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
@@ -970,27 +982,38 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
   }
 
   window._0cpy = function(txt) {
-    navigator.clipboard.writeText(txt).then(function() {
-      _0toast('Copied to clipboard', 'success');
-      _0log('Clipboard copy: ' + txt, 'info', 'dash');
-    }).catch(function() { _0toast('Copy failed', 'error'); });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function() {
+        _toast('Copied to clipboard', 'success');
+      }).catch(function() { _toast('Copy failed', 'error'); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); _toast('Copied', 'success'); } catch (e) { _toast('Copy failed', 'error'); }
+      document.body.removeChild(ta);
+    }
   };
 
-  async function _0del(id) {
-    try {
-      await _0api('/api/links/' + id, { method: 'DELETE' });
-      state.urls = state.urls.filter(function(item) { return item.id !== id; });
-      _0rend();
-      _0upd();
-      _0toast('Link deleted', 'info');
-      _0log('Link removed', 'warn', 'dash');
-    } catch (e) {
-      _0toast('Delete failed', 'error');
-      _0log('Delete failed: ' + e.message, 'error', 'dash');
-    }
+  function _del(id) {
+    _api('/api/links/' + id, { method: 'DELETE' }, function(err) {
+      if (err) {
+        _toast('Delete failed', 'error');
+        _log('Delete failed: ' + err.message, 'error', 'dash');
+        return;
+      }
+      _s.urls = _s.urls.filter(function(item) { return item.id !== id; });
+      _rend();
+      _upd();
+      _toast('Link deleted', 'info');
+      _log('Link removed', 'warn', 'dash');
+    });
   }
 
-  window._0del = _0del;
+  window._0del = _del;
 
   window._0qr = function(url) {
     var mc = $('#qr-canvas-container');
@@ -1007,17 +1030,19 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     ctx.fillStyle = '#000';
     var cellSize = size / 25;
     var pattern = [];
-    for (var i = 0; i < 25; i++) {
+    var i, j;
+    for (i = 0; i < 25; i++) {
       pattern[i] = [];
-      for (var j = 0; j < 25; j++) pattern[i][j] = Math.random() > 0.5 ? 1 : 0;
+      for (j = 0; j < 25; j++) pattern[i][j] = Math.random() > 0.5 ? 1 : 0;
     }
     function drawFinder(x, y) {
-      for (var i = 0; i < 7; i++) {
-        for (var j = 0; j < 7; j++) {
-          if (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
-            pattern[x + i][y + j] = 1;
+      var ii, jj;
+      for (ii = 0; ii < 7; ii++) {
+        for (jj = 0; jj < 7; jj++) {
+          if (ii === 0 || ii === 6 || jj === 0 || jj === 6 || (ii >= 2 && ii <= 4 && jj >= 2 && jj <= 4)) {
+            pattern[x + ii][y + jj] = 1;
           } else {
-            pattern[x + i][y + j] = 0;
+            pattern[x + ii][y + jj] = 0;
           }
         }
       }
@@ -1025,8 +1050,8 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     drawFinder(0, 0);
     drawFinder(18, 0);
     drawFinder(0, 18);
-    for (var i = 0; i < 25; i++) {
-      for (var j = 0; j < 25; j++) {
+    for (i = 0; i < 25; i++) {
+      for (j = 0; j < 25; j++) {
         if (pattern[i][j]) ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
       }
     }
@@ -1038,90 +1063,91 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     $('#qr-modal').classList.add('active');
   };
 
-  function _0upd() {
+  function _upd() {
     var totalClicks = 0;
     var totalLen = 0;
-    for (var i = 0; i < state.urls.length; i++) {
-      totalClicks += state.urls[i].clicks || 0;
-      totalLen += String(state.urls[i].slug || '').length;
+    for (var i = 0; i < _s.urls.length; i++) {
+      totalClicks += _s.urls[i].clicks || 0;
+      totalLen += String(_s.urls[i].slug || '').length;
     }
-    var avgLen = state.urls.length ? (totalLen / state.urls.length).toFixed(1) : 0;
-    var entropy = state.urls.length ? _0esc(state.urls[0].slug || '').length : 0;
-    $('#stat-total').textContent = state.urls.length;
+    var avgLen = _s.urls.length ? (totalLen / _s.urls.length).toFixed(1) : 0;
+    var entropy = _s.urls.length ? _esc(_s.urls[0].slug || '').length : 0;
+    $('#stat-total').textContent = _s.urls.length;
     $('#stat-clicks').textContent = totalClicks;
     $('#stat-avg').textContent = avgLen;
     $('#stat-entropy').textContent = entropy;
   }
 
-  function _0rnd() {
-    $('#slug-input').value = _0slug(10);
-    _0log('Random slug generated', 'info', 'dash');
+  function _rnd() {
+    $('#slug-input').value = _slug(10);
+    _log('Random slug generated', 'info', 'dash');
   }
 
-  async function _0clr() {
-    if (state.urls.length === 0) return;
-    if (confirm('Delete all forged links?')) {
-      try {
-        for (var i = 0; i < state.urls.length; i++) {
-          await _0api('/api/links/' + state.urls[i].id, { method: 'DELETE' });
-        }
-        state.urls = [];
-        _0rend();
-        _0upd();
-        $('#result-area').classList.remove('show');
-        _0toast('All links cleared', 'info');
-        _0log('All links purged', 'warn', 'dash');
-      } catch (e) {
-        _0toast('Could not clear links', 'error');
-      }
+  function _clr() {
+    if (_s.urls.length === 0) return;
+    if (!confirm('Delete all forged links?')) return;
+    var remaining = _s.urls.length;
+    var done = 0;
+    var hasErr = false;
+    for (var i = 0; i < _s.urls.length; i++) {
+      (function(idx) {
+        _api('/api/links/' + _s.urls[idx].id, { method: 'DELETE' }, function(err) {
+          done++;
+          if (err) hasErr = true;
+          if (done >= remaining) {
+            _s.urls = [];
+            _rend();
+            _upd();
+            $('#result-area').classList.remove('show');
+            if (hasErr) { _toast('Could not clear all links', 'error'); }
+            else { _toast('All links cleared', 'info'); _log('All links purged', 'warn', 'dash'); }
+          }
+        });
+      })(i);
     }
   }
 
-  function _0out() {
-    state.auth = false;
-    state.user = null;
-    state.token = '';
-    state.urls = [];
-    _0saveToken();
-    _0showScreen('login');
+  function _out() {
+    _s.auth = false;
+    _s.user = null;
+    _s.token = '';
+    _s.urls = [];
+    _saveTk();
+    _showScreen('login');
     $('#login-user').value = '';
     $('#login-pass').value = '';
     $('#result-area').classList.remove('show');
-    _0log('Session terminated', 'warn');
-    _0toast('Logged out', 'info');
+    _log('Session terminated', 'warn');
+    _toast('Logged out', 'info');
   }
 
   document.addEventListener('contextmenu', function(e) {
     if (e.target.closest('.vault-input, .result-url, .console-log, .console-body')) {
       e.preventDefault();
-      _0log('Context menu blocked', 'warn');
     }
   });
 
-  $('#login-pass').addEventListener('copy', function(e) {
-    e.preventDefault();
-    _0log('Password copy blocked', 'warn');
-  });
+  $('#login-pass').addEventListener('copy', function(e) { e.preventDefault(); });
 
   $('#route-home').addEventListener('click', function() {
     window.history.replaceState({}, '', '/');
     window.location.reload();
   });
 
-  $('#btn-login').addEventListener('click', _0auth);
-  $('#login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') _0auth(); });
-  $('#login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') _0auth(); });
+  $('#btn-login').addEventListener('click', _auth);
+  $('#login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') _auth(); });
+  $('#login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') _auth(); });
   $('#toggle-pass').addEventListener('click', function() {
     var inp = $('#login-pass');
     var icon = this.querySelector('i');
     if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash'; }
     else { inp.type = 'password'; icon.className = 'fa-solid fa-eye'; }
   });
-  $('#btn-create').addEventListener('click', _0create);
-  $('#btn-random').addEventListener('click', _0rnd);
-  $('#btn-clear').addEventListener('click', _0clr);
-  $('#btn-logout').addEventListener('click', _0out);
-  $('#btn-save-edit').addEventListener('click', _0saveEditedLink);
+  $('#btn-create').addEventListener('click', _create);
+  $('#btn-random').addEventListener('click', _rnd);
+  $('#btn-clear').addEventListener('click', _clr);
+  $('#btn-logout').addEventListener('click', _out);
+  $('#btn-save-edit').addEventListener('click', _saveEdit);
   $('#btn-cancel-edit').addEventListener('click', function() { $('#edit-modal').classList.remove('active'); });
   $('#edit-modal-close').addEventListener('click', function() { $('#edit-modal').classList.remove('active'); });
   $('#edit-modal').addEventListener('click', function(e) {
@@ -1130,12 +1156,12 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
   $('#edit-slug').addEventListener('input', function() {
     var prefix = $('#edit-prefix').value;
     var slug = $('#edit-slug').value.trim();
-    $('#edit-preview').textContent = _0fullShortUrl(prefix, slug || 'preview');
+    $('#edit-preview').textContent = _fullUrl(prefix, slug || 'preview');
   });
   $('#edit-prefix').addEventListener('change', function() {
     var prefix = $('#edit-prefix').value;
     var slug = $('#edit-slug').value.trim();
-    $('#edit-preview').textContent = _0fullShortUrl(prefix, slug || 'preview');
+    $('#edit-preview').textContent = _fullUrl(prefix, slug || 'preview');
   });
   $('#btn-copy').addEventListener('click', function() {
     var url = $('#result-url').dataset.shortUrl || $('#result-url').textContent.trim();
@@ -1154,11 +1180,10 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     if (e.target.classList.contains('modal-backdrop')) $('#qr-modal').classList.remove('active');
   });
 
-  _0log('Security engine loaded', 'info');
-  _0log('Anti-tamper active', 'info');
-  _0autoLogin();
-  _0route();
-  window.addEventListener('popstate', _0route);
+  _log('System ready', 'info');
+  _autoLogin();
+  _route();
+  window.addEventListener('popstate', _route);
 })();
 </script>
 </body>
