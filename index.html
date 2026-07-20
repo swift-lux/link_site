@@ -2,27 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="referrer" content="no-referrer">
 <title>SVCODE | URL Vault</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="shortcut icon" href="favicon.svg">
 <style>
-/* ═══════════════════════════════════════════════════════════════
-   SVCODE URL VAULT — PROFESSIONAL SECURITY INTERFACE v2.0
-   Security: AES-256, SHA-3, Rate Limiting, Session Hardening
-   ═══════════════════════════════════════════════════════════════ */
-
 :root {
   --bg-void: #030305;
   --bg-surface: #08080e;
   --bg-elevated: #0e0e18;
   --bg-glass: rgba(12,12,22,0.72);
-  --bg-glass-hover: rgba(18,18,32,0.82);
   --accent-cyan: #00e5ff;
   --accent-violet: #b967ff;
   --accent-pink: #ff2d78;
@@ -34,256 +27,272 @@
   --text-muted: #4a4a6a;
   --text-dim: #2a2a4a;
   --grad-cyan: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
-  --grad-warm: linear-gradient(135deg, var(--accent-pink), var(--accent-amber));
-  --grad-secure: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 9999px;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
   --shadow-md: 0 8px 32px rgba(0,0,0,0.45);
   --shadow-lg: 0 16px 64px rgba(0,0,0,0.55);
   --shadow-glow-cyan: 0 0 40px rgba(0,229,255,0.12);
   --shadow-glow-violet: 0 0 40px rgba(185,103,255,0.12);
-  --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --z-bg: -10;
-  --z-particles: 0;
-  --z-content: 10;
-  --z-overlay: 50;
-  --z-modal: 100;
-  --z-toast: 200;
 }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body { font-family: var(--font-sans); background: var(--bg-void); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+button { font-family: inherit; }
+input, select { font-family: var(--font-mono); }
+canvas#bg-canvas { position: fixed; inset: 0; z-index: -10; pointer-events: none; }
+#particles-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.particle { position: absolute; border-radius: 50%; opacity: 0; pointer-events: none; }
+@keyframes pFloat {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  8% { opacity: var(--po, 0.4); }
+  92% { opacity: var(--po, 0.4); }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+#noise-overlay { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.02; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-repeat: repeat; background-size: 256px; }
+#cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; pointer-events: none; z-index: 0; background: radial-gradient(circle, rgba(0,229,255,0.03) 0%, transparent 70%); transform: translate(-50%, -50%); transition: left 0.15s ease, top 0.15s ease; will-change: left, top; }
 
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-html { font-size: 16px; scroll-behavior: smooth; }
-body { font-family: var(--font-sans); background: var(--bg-void); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; line-height: 1.5; }
-
-#bg-canvas { position: fixed; inset: 0; z-index: var(--z-bg); pointer-events: none; }
-#particles-layer { position: fixed; inset: 0; z-index: var(--z-particles); pointer-events: none; overflow: hidden; }
-.particle { position: absolute; width: 2px; height: 2px; background: var(--accent-cyan); border-radius: 50%; opacity: 0; animation: particleFloat 10s ease-in-out infinite; }
-@keyframes particleFloat { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 8% { opacity: 0.5; } 92% { opacity: 0.5; } 100% { transform: translateY(-10vh) scale(1); opacity: 0; } }
-#noise-overlay { position: fixed; inset: 0; z-index: var(--z-particles); pointer-events: none; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-repeat: repeat; background-size: 256px; }
-#scanlines { position: fixed; inset: 0; z-index: var(--z-particles); pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px); }
-#cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; pointer-events: none; z-index: var(--z-particles); background: radial-gradient(circle, rgba(0,229,255,0.035) 0%, transparent 70%); transform: translate(-50%, -50%); transition: opacity 0.3s ease; }
-
-.screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.7s var(--ease-smooth), visibility 0.7s; z-index: var(--z-content); padding: var(--space-lg); }
+.screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.6s var(--ease-smooth), visibility 0.6s; z-index: 10; padding: 16px; }
 .screen.active { opacity: 1; visibility: visible; }
+.screen.active .glass-panel { animation: panelEnter 0.8s var(--ease-snap) forwards; }
+@keyframes panelEnter { from { opacity: 0; transform: translateY(30px) scale(0.96); filter: blur(3px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 
-.glass-panel { background: var(--bg-glass); backdrop-filter: blur(28px) saturate(1.5); -webkit-backdrop-filter: blur(28px) saturate(1.5); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-xl); padding: var(--space-2xl); box-shadow: var(--shadow-lg), var(--shadow-glow-cyan); position: relative; overflow: hidden; }
+.glass-panel { background: var(--bg-glass); backdrop-filter: blur(28px) saturate(1.5); -webkit-backdrop-filter: blur(28px) saturate(1.5); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-xl); padding: 40px; box-shadow: var(--shadow-lg), var(--shadow-glow-cyan); position: relative; overflow: hidden; }
 .glass-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent); }
 .glass-panel::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(185,103,255,0.1), transparent); }
-.glass-card { background: var(--bg-glass); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius-lg); padding: var(--space-xl); position: relative; overflow: hidden; transition: transform 0.35s var(--ease-smooth), box-shadow 0.35s var(--ease-smooth), border-color 0.35s ease; }
-.glass-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md), var(--shadow-glow-violet); border-color: rgba(185,103,255,0.08); }
+.glass-card { background: var(--bg-glass); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius-lg); padding: 24px; position: relative; overflow: hidden; transition: transform 0.35s var(--ease-smooth), box-shadow 0.35s var(--ease-smooth), border-color 0.35s ease; }
+.glass-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md), var(--shadow-glow-violet); border-color: rgba(185,103,255,0.06); }
 
-.login-panel { width: 100%; max-width: 460px; animation: panelEnter 0.9s var(--ease-snap) forwards; }
-@keyframes panelEnter { from { opacity: 0; transform: translateY(40px) scale(0.94); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
-.logo-anim { text-align: center; margin-bottom: var(--space-2xl); }
-.logo-svg { width: 90px; height: 90px; margin: 0 auto var(--space-md); display: block; }
-.logo-ring { fill: none; stroke: var(--accent-cyan); stroke-width: 2; stroke-dasharray: 251; stroke-dashoffset: 251; animation: drawRing 2.2s var(--ease-smooth) forwards, pulseRing 3.5s ease-in-out infinite 2.2s; }
-.logo-ring.inner { stroke: var(--accent-violet); stroke-dasharray: 176; stroke-dashoffset: 176; animation: drawRing 2.2s var(--ease-smooth) 0.35s forwards, pulseRing 3.5s ease-in-out infinite 2.55s reverse; }
-.logo-cross { stroke: var(--accent-cyan); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 120; stroke-dashoffset: 120; animation: drawRing 1.6s var(--ease-smooth) 0.7s forwards; }
-.logo-dot { fill: var(--accent-pink); animation: pulseDot 2.2s ease-in-out infinite 1.8s; }
+.login-panel { width: 100%; max-width: 440px; }
+.logo-anim { text-align: center; margin-bottom: 32px; }
+.logo-svg { width: 80px; height: 80px; margin: 0 auto 12px; display: block; }
+.logo-ring { fill: none; stroke: var(--accent-cyan); stroke-width: 2; stroke-dasharray: 251; stroke-dashoffset: 251; animation: drawRing 2s var(--ease-smooth) forwards, pulseRing 3s ease-in-out infinite 2s; }
+.logo-ring.inner { stroke: var(--accent-violet); stroke-dasharray: 176; stroke-dashoffset: 176; animation: drawRing 2s var(--ease-smooth) 0.3s forwards, pulseRing 3s ease-in-out infinite 2.3s reverse; }
+.logo-cross { stroke: var(--accent-cyan); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 120; stroke-dashoffset: 120; animation: drawRing 1.4s var(--ease-smooth) 0.6s forwards; }
+.logo-dot { fill: var(--accent-pink); animation: pulseDot 2s ease-in-out infinite 1.5s; }
 @keyframes drawRing { to { stroke-dashoffset: 0; } }
 @keyframes pulseRing { 0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 2px var(--accent-cyan)); } 50% { opacity: 1; filter: drop-shadow(0 0 8px var(--accent-cyan)); } }
-@keyframes pulseDot { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent-pink)); } 50% { transform: scale(1.4); filter: drop-shadow(0 0 10px var(--accent-pink)); } }
-.brand-title { font-family: var(--font-mono); font-size: 1.85rem; font-weight: 800; letter-spacing: 5px; display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); }
+@keyframes pulseDot { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent-pink)); } 50% { transform: scale(1.3); filter: drop-shadow(0 0 10px var(--accent-pink)); } }
+.brand-title { font-family: var(--font-mono); font-size: 1.7rem; font-weight: 800; letter-spacing: 5px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .glitch { position: relative; color: var(--text-primary); }
 .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .glitch::before { color: var(--accent-cyan); animation: glitch1 3.5s infinite linear alternate-reverse; clip-path: polygon(0 0, 100% 0, 100% 38%, 0 38%); }
 .glitch::after { color: var(--accent-pink); animation: glitch2 2.8s infinite linear alternate-reverse; clip-path: polygon(0 62%, 100% 62%, 100% 100%, 0 100%); }
-@keyframes glitch1 { 0%, 90%, 100% { transform: translate(0); } 92% { transform: translate(-3px, 1px); } 94% { transform: translate(3px, -1px); } 96% { transform: translate(-2px, 2px); } 98% { transform: translate(2px, -2px); } }
-@keyframes glitch2 { 0%, 90%, 100% { transform: translate(0); } 91% { transform: translate(3px, -1px); } 93% { transform: translate(-3px, 1px); } 95% { transform: translate(2px, 2px); } 97% { transform: translate(-2px, -2px); } }
-.brand-sub { font-size: 0.6rem; font-weight: 500; letter-spacing: 10px; color: var(--text-muted); }
+@keyframes glitch1 { 0%,90%,100% { transform: translate(0); } 92% { transform: translate(-3px,1px); } 94% { transform: translate(3px,-1px); } 96% { transform: translate(-2px,2px); } 98% { transform: translate(2px,-2px); } }
+@keyframes glitch2 { 0%,90%,100% { transform: translate(0); } 91% { transform: translate(3px,-1px); } 93% { transform: translate(-3px,1px); } 95% { transform: translate(2px,2px); } 97% { transform: translate(-2px,-2px); } }
+.brand-sub { font-size: 0.55rem; font-weight: 500; letter-spacing: 10px; color: var(--text-muted); }
 
-.input-group { position: relative; margin-bottom: var(--space-lg); }
-.input-group.large { margin-bottom: var(--space-xl); }
-.vault-input, .vault-select { width: 100%; padding: var(--space-md) var(--space-md) var(--space-md) 48px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); color: var(--text-primary); font-family: var(--font-mono); font-size: 0.88rem; outline: none; transition: all 0.35s var(--ease-smooth); }
-.vault-input:focus, .vault-select:focus { border-color: var(--accent-cyan); background: rgba(0,0,0,0.45); box-shadow: 0 0 0 4px rgba(0,229,255,0.08), 0 0 25px rgba(0,229,255,0.04); }
+.input-group { position: relative; margin-bottom: 16px; }
+.input-group.large { margin-bottom: 20px; }
+.vault-input, .vault-select { width: 100%; padding: 14px 14px 14px 44px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem; outline: none; transition: all 0.35s var(--ease-smooth); }
+.vault-input:focus, .vault-select:focus { border-color: var(--accent-cyan); background: rgba(0,0,0,0.45); box-shadow: 0 0 0 3px rgba(0,229,255,0.08), 0 0 20px rgba(0,229,255,0.04); }
 .vault-input::placeholder { color: transparent; }
-.vault-label { position: absolute; left: 48px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 2.5px; pointer-events: none; transition: all 0.35s var(--ease-smooth); display: flex; align-items: center; gap: var(--space-sm); }
-.label-icon { font-size: 0.8rem; color: var(--text-dim); transition: color 0.3s ease; }
+.vault-label { position: absolute; left: 44px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 2px; pointer-events: none; transition: all 0.35s var(--ease-smooth); display: flex; align-items: center; gap: 8px; }
+.label-icon { font-size: 0.75rem; color: var(--text-dim); transition: color 0.3s ease; }
 .vault-input:focus ~ .vault-label .label-icon, .vault-input:not(:placeholder-shown) ~ .vault-label .label-icon { color: var(--accent-cyan); }
-.vault-input:focus ~ .vault-label, .vault-input:not(:placeholder-shown) ~ .vault-label, .vault-select:focus ~ .vault-label, .vault-select:valid ~ .vault-label { top: -11px; left: 14px; transform: translateY(0); font-size: 0.62rem; color: var(--accent-cyan); background: var(--bg-surface); padding: 0 var(--space-sm); border-radius: 4px; letter-spacing: 3px; }
-.input-border { position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--grad-cyan); border-radius: 0 0 var(--radius-md) var(--radius-md); transition: all 0.45s var(--ease-smooth); }
+.vault-input:focus ~ .vault-label, .vault-input:not(:placeholder-shown) ~ .vault-label, .vault-select:focus ~ .vault-label, .vault-select:valid ~ .vault-label { top: -10px; left: 12px; transform: translateY(0); font-size: 0.58rem; color: var(--accent-cyan); background: var(--bg-surface); padding: 0 6px; border-radius: 4px; letter-spacing: 2.5px; }
+.input-border { position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--grad-cyan); border-radius: 0 0 var(--radius-md) var(--radius-md); transition: all 0.45s var(--ease-smooth); pointer-events: none; }
 .vault-input:focus ~ .input-border { left: 0; width: 100%; }
-.input-glow { position: absolute; inset: -3px; border-radius: calc(var(--radius-md) + 3px); background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet), var(--accent-pink)); opacity: 0; z-index: -1; filter: blur(10px); transition: opacity 0.35s ease; }
+.input-glow { position: absolute; inset: -3px; border-radius: calc(var(--radius-md) + 3px); background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet), var(--accent-pink)); opacity: 0; z-index: -1; filter: blur(10px); transition: opacity 0.35s ease; pointer-events: none; }
 .vault-input:focus ~ .input-glow { opacity: 0.12; }
-.toggle-pass { position: absolute; right: var(--space-md); top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: var(--space-sm); transition: all 0.2s ease; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.toggle-pass { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; padding: 6px; transition: all 0.2s ease; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); z-index: 2; }
 .toggle-pass:hover { color: var(--accent-cyan); background: rgba(0,229,255,0.05); }
 
-.vault-btn { position: relative; width: 100%; padding: var(--space-md) var(--space-xl); border: none; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; letter-spacing: 3.5px; cursor: pointer; overflow: hidden; transition: all 0.35s var(--ease-smooth); display: flex; align-items: center; justify-content: center; gap: var(--space-sm); }
-.vault-btn.primary { background: var(--grad-cyan); color: var(--bg-void); box-shadow: 0 4px 25px rgba(0,229,255,0.2); }
-.vault-btn.primary:hover { transform: translateY(-3px); box-shadow: 0 8px 35px rgba(0,229,255,0.3), 0 0 60px rgba(0,229,255,0.08); }
-.vault-btn.primary:active { transform: translateY(-1px); }
+.vault-btn { position: relative; width: 100%; padding: 14px 24px; border: none; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 3px; cursor: pointer; overflow: hidden; transition: all 0.35s var(--ease-smooth); display: flex; align-items: center; justify-content: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
+.vault-btn:active { transform: scale(0.97); }
+.vault-btn.primary { background: var(--grad-cyan); color: var(--bg-void); box-shadow: 0 4px 20px rgba(0,229,255,0.2); }
+.vault-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,0.3); }
 .vault-btn.secondary { background: rgba(255,255,255,0.04); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.07); }
-.vault-btn.secondary:hover { background: rgba(255,255,255,0.07); color: var(--text-primary); border-color: rgba(0,229,255,0.18); box-shadow: 0 0 20px rgba(0,229,255,0.05); }
-.vault-btn.ghost { width: auto; padding: var(--space-sm) var(--space-md); background: none; color: var(--text-muted); font-size: 0.68rem; letter-spacing: 1.5px; border: 1px solid transparent; }
+.vault-btn.secondary:hover { background: rgba(255,255,255,0.07); color: var(--text-primary); border-color: rgba(0,229,255,0.18); }
+.vault-btn.ghost { width: auto; padding: 6px 12px; background: none; color: var(--text-muted); font-size: 0.62rem; letter-spacing: 1.5px; border: 1px solid transparent; }
 .vault-btn.ghost:hover { color: var(--accent-red); border-color: rgba(255,51,102,0.15); background: rgba(255,51,102,0.03); }
-.btn-shimmer { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%); transform: translateX(-100%); transition: transform 0.7s ease; }
+.btn-shimmer { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%); transform: translateX(-100%); transition: transform 0.7s ease; pointer-events: none; }
 .vault-btn:hover .btn-shimmer { transform: translateX(100%); }
 
-.security-badges { display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-xl); flex-wrap: wrap; }
-.badge { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-xs) var(--space-sm); background: rgba(0,255,157,0.04); border: 1px solid rgba(0,255,157,0.1); border-radius: var(--radius-full); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 2.5px; color: var(--accent-green); transition: all 0.3s ease; }
-.badge:hover { background: rgba(0,255,157,0.08); border-color: rgba(0,255,157,0.2); transform: translateY(-1px); }
-.badge i { font-size: 0.65rem; }
+.security-badges { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.badge { display: flex; align-items: center; gap: 4px; padding: 3px 8px; background: rgba(0,255,157,0.04); border: 1px solid rgba(0,255,157,0.1); border-radius: var(--radius-full); font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 2px; color: var(--accent-green); }
+.badge i { font-size: 0.6rem; }
 
-.console-log { margin-top: var(--space-xl); padding: var(--space-md); background: rgba(0,0,0,0.45); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.9; max-height: 110px; overflow-y: auto; border-left: 2px solid var(--accent-cyan); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
-.console-log::-webkit-scrollbar { width: 3px; }
-.console-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: var(--radius-full); }
-.log-line { display: block; animation: logAppear 0.35s ease forwards; opacity: 0; }
-@keyframes logAppear { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+.console-log { margin-top: 20px; padding: 12px; background: rgba(0,0,0,0.45); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.58rem; line-height: 1.9; max-height: 100px; overflow-y: auto; border-left: 2px solid var(--accent-cyan); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+.log-line { display: block; }
 .log-time { color: var(--text-dim); }
 .log-type { color: var(--accent-cyan); font-weight: 700; }
 .log-type.warn { color: var(--accent-amber); }
 .log-type.error { color: var(--accent-red); }
 .log-type.success { color: var(--accent-green); }
 
-#dashboard-screen { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0; }
-.top-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-xl); background: rgba(3,3,5,0.85); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4); border-bottom: 1px solid rgba(255,255,255,0.04); }
-.nav-brand { display: flex; align-items: center; gap: var(--space-md); }
-.nav-logo svg { width: 34px; height: 34px; }
+#dashboard-screen { display: flex; flex-direction: column; align-items: stretch; padding: 0; }
+.top-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: rgba(3,3,5,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.04); }
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-logo svg { width: 30px; height: 30px; }
 .nav-ring { fill: none; stroke: var(--accent-cyan); stroke-width: 2.5; }
 .nav-dot { fill: var(--accent-pink); }
-.nav-title { font-family: var(--font-mono); font-size: 0.92rem; font-weight: 800; letter-spacing: 3.5px; }
-.nav-tag { font-size: 0.58rem; color: var(--text-muted); font-weight: 500; letter-spacing: 5px; margin-left: var(--space-sm); }
-.nav-actions { display: flex; align-items: center; gap: var(--space-lg); }
-.status-indicator { display: flex; align-items: center; gap: var(--space-sm); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 2.5px; color: var(--accent-green); }
-.status-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 12px var(--accent-green); animation: statusPulse 2.5s ease-in-out infinite; }
-@keyframes statusPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
-.nav-btn { background: none; border: 1px solid rgba(255,255,255,0.07); border-radius: var(--radius-sm); color: var(--text-muted); width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.25s ease; }
-.nav-btn:hover { color: var(--accent-red); border-color: rgba(255,51,102,0.25); background: rgba(255,51,102,0.05); transform: rotate(90deg); }
+.nav-title { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 800; letter-spacing: 3px; }
+.nav-tag { font-size: 0.52rem; color: var(--text-muted); font-weight: 500; letter-spacing: 4px; margin-left: 6px; }
+.nav-actions { display: flex; align-items: center; gap: 16px; }
+.status-indicator { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 2px; color: var(--accent-green); }
+.status-dot { width: 7px; height: 7px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); animation: statusPulse 2.5s ease-in-out infinite; }
+@keyframes statusPulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.7); } }
+.nav-btn { background: none; border: 1px solid rgba(255,255,255,0.07); border-radius: var(--radius-sm); color: var(--text-muted); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
+.nav-btn:hover { color: var(--accent-red); border-color: rgba(255,51,102,0.25); background: rgba(255,51,102,0.05); }
 
-.dashboard-main { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-xl); padding: var(--space-xl); max-width: 1500px; margin: 0 auto; width: 100%; flex: 1; overflow-y: auto; }
+.dashboard-main { display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; overflow-y: auto; }
 
-.card-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-xl); }
-.card-header.compact { margin-bottom: var(--space-lg); }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.card-header.compact { margin-bottom: 16px; }
 .card-header.compact .card-meta { flex: 1; }
-.card-icon { width: 46px; height: 46px; background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(185,103,255,0.08)); border: 1px solid rgba(0,229,255,0.12); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; color: var(--accent-cyan); flex-shrink: 0; }
+.card-icon { width: 42px; height: 42px; background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(185,103,255,0.08)); border: 1px solid rgba(0,229,255,0.12); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; color: var(--accent-cyan); flex-shrink: 0; }
 .card-icon.pulse-icon { animation: iconPulse 3.5s ease-in-out infinite; }
-@keyframes iconPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.15); } 50% { box-shadow: 0 0 0 12px rgba(0,229,255,0); } }
+@keyframes iconPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.15); } 50% { box-shadow: 0 0 0 10px rgba(0,229,255,0); } }
 .card-icon.spin-icon { animation: iconSpin 10s linear infinite; }
 @keyframes iconSpin { to { transform: rotate(360deg); } }
 .card-icon.blink-icon { animation: iconBlink 1.8s ease-in-out infinite; }
-@keyframes iconBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-.card-meta h2 { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 800; letter-spacing: 3.5px; color: var(--text-primary); }
-.card-meta p { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; }
+@keyframes iconBlink { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
+.card-meta h2 { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 800; letter-spacing: 3px; color: var(--text-primary); }
+.card-meta p { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.5px; }
 
-.forge-inputs { margin-bottom: var(--space-lg); }
-.forge-row { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); margin-top: var(--space-md); }
-.forge-actions { display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-md); }
+.forge-row { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-top: 14px; }
+.forge-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; margin-top: 6px; }
 
-.result-area { margin-top: var(--space-xl); padding: var(--space-xl); background: rgba(0,0,0,0.35); border: 1px solid rgba(0,229,255,0.08); border-radius: var(--radius-md); position: relative; overflow: hidden; display: none; }
-.result-area.show { display: block; animation: resultSlide 0.6s var(--ease-snap) forwards; }
-@keyframes resultSlide { from { opacity: 0; transform: translateY(25px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.result-glow { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,229,255,0.025), rgba(185,103,255,0.025)); pointer-events: none; }
-.result-label { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 5px; color: var(--accent-cyan); margin-bottom: var(--space-sm); }
-.result-url { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); word-break: break-all; padding: var(--space-md); background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan); transition: all 0.3s ease; }
+.result-area { margin-top: 20px; padding: 20px; background: rgba(0,0,0,0.35); border: 1px solid rgba(0,229,255,0.08); border-radius: var(--radius-md); position: relative; overflow: hidden; display: none; }
+.result-area.show { display: block; animation: resultSlide 0.5s var(--ease-snap) forwards; }
+@keyframes resultSlide { from { opacity:0; transform:translateY(20px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+.result-glow { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,229,255,0.02), rgba(185,103,255,0.02)); pointer-events: none; }
+.result-label { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 4px; color: var(--accent-cyan); margin-bottom: 8px; }
+.result-url { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: var(--text-primary); word-break: break-all; padding: 12px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan); transition: all 0.3s ease; cursor: pointer; }
 .result-url:hover { border-left-color: var(--accent-violet); background: rgba(0,0,0,0.4); }
 .result-url .url-domain { color: var(--text-muted); }
 .result-url .url-path { color: var(--accent-cyan); }
 .result-url .url-slug { color: var(--accent-violet); }
-.result-meta { display: flex; gap: var(--space-lg); margin-top: var(--space-md); font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); }
-.meta-item i { margin-right: var(--space-xs); color: var(--text-dim); }
-.result-actions { display: flex; gap: var(--space-sm); margin-top: var(--space-lg); }
-.res-btn { flex: 1; padding: var(--space-sm) var(--space-md); background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2.5px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: var(--space-xs); }
+.result-meta { display: flex; gap: 16px; margin-top: 12px; font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-muted); }
+.meta-item i { margin-right: 4px; color: var(--text-dim); }
+.result-actions { display: flex; gap: 8px; margin-top: 14px; }
+.res-btn { flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 2px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
 .res-btn:hover { background: rgba(0,229,255,0.07); border-color: rgba(0,229,255,0.18); color: var(--accent-cyan); transform: translateY(-2px); }
+.res-btn:active { transform: scale(0.97); }
 
-.url-list { max-height: 420px; overflow-y: auto; padding-right: var(--space-sm); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+.url-list { max-height: 400px; overflow-y: auto; padding-right: 6px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
 .url-list::-webkit-scrollbar { width: 4px; }
-.url-list::-webkit-scrollbar-track { background: transparent; }
 .url-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: var(--radius-full); }
-.url-item { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md); background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); margin-bottom: var(--space-sm); transition: all 0.35s var(--ease-smooth); animation: itemEnter 0.45s var(--ease-snap) forwards; opacity: 0; }
-@keyframes itemEnter { from { opacity: 0; transform: translateX(-25px); } to { opacity: 1; transform: translateX(0); } }
-.url-item:hover { background: rgba(0,0,0,0.32); border-color: rgba(0,229,255,0.08); transform: translateX(6px); box-shadow: -4px 0 15px rgba(0,229,255,0.04); }
-.url-item-index { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim); min-width: 28px; text-align: center; font-weight: 700; }
+.url-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); margin-bottom: 6px; transition: all 0.35s var(--ease-smooth); }
+.url-item:hover { background: rgba(0,0,0,0.32); border-color: rgba(0,229,255,0.08); transform: translateX(4px); box-shadow: -4px 0 12px rgba(0,229,255,0.03); }
+.url-item-index { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-dim); min-width: 24px; text-align: center; font-weight: 700; }
 .url-item-info { flex: 1; min-width: 0; }
-.url-item-short { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-cyan); word-break: break-all; font-weight: 600; }
-.url-item-target { font-size: 0.62rem; color: var(--text-muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.url-item-time { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim); white-space: nowrap; }
-.url-item-actions { display: flex; gap: var(--space-xs); }
-.url-item-btn { width: 30px; height: 30px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer; font-size: 0.72rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+.url-item-short { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan); word-break: break-all; font-weight: 600; line-height: 1.3; }
+.url-item-target { font-size: 0.6rem; color: var(--text-muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.url-item-label-tag { font-size: 0.55rem; color: var(--accent-violet); margin-top: 2px; font-style: italic; }
+.url-item-meta { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-dim); white-space: nowrap; text-align: right; min-width: 50px; }
+.url-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.url-item-btn { width: 28px; height: 28px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 0.68rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
 .url-item-btn:hover { background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.18); color: var(--accent-cyan); transform: scale(1.1); }
-.url-item-btn.delete:hover { background: rgba(255,51,102,0.1); border-color: rgba(255,51,102,0.2); color: var(--accent-red); }
-.empty-state { text-align: center; padding: var(--space-2xl); color: var(--text-muted); }
-.empty-icon { font-size: 2.2rem; color: var(--text-dim); margin-bottom: var(--space-md); }
-.empty-state p { font-size: 0.88rem; margin-bottom: var(--space-xs); color: var(--text-secondary); }
-.empty-state span { font-size: 0.68rem; color: var(--text-dim); }
+.url-item-btn:active { transform: scale(0.9); }
+.url-item-btn.del:hover { background: rgba(255,51,102,0.1); border-color: rgba(255,51,102,0.2); color: var(--accent-red); }
+.empty-state { text-align: center; padding: 32px; color: var(--text-muted); }
+.empty-icon { font-size: 2rem; color: var(--text-dim); margin-bottom: 12px; }
+.empty-state p { font-size: 0.82rem; margin-bottom: 4px; color: var(--text-secondary); }
+.empty-state span { font-size: 0.65rem; color: var(--text-dim); }
 
-.sidebar { display: flex; flex-direction: column; gap: var(--space-lg); }
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
-.stat-item { text-align: center; padding: var(--space-md); background: rgba(0,0,0,0.22); border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.03); transition: all 0.3s ease; }
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-item { text-align: center; padding: 12px; background: rgba(0,0,0,0.22); border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.03); transition: all 0.3s ease; }
 .stat-item:hover { border-color: rgba(0,229,255,0.08); transform: translateY(-2px); }
-.stat-value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--accent-cyan); line-height: 1; transition: all 0.3s ease; }
+.stat-value { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 800; color: var(--accent-cyan); line-height: 1; transition: all 0.3s ease; }
 .stat-item:hover .stat-value { color: var(--accent-violet); text-shadow: 0 0 20px rgba(185,103,255,0.3); }
-.stat-label { font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 2.5px; color: var(--text-muted); margin-top: var(--space-sm); }
+.stat-label { font-family: var(--font-mono); font-size: 0.48rem; letter-spacing: 2px; color: var(--text-muted); margin-top: 6px; }
 
-.console-body { max-height: 220px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.58rem; line-height: 1.9; padding-right: var(--space-sm); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
+.console-body { max-height: 200px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.55rem; line-height: 1.9; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
 .console-body::-webkit-scrollbar { width: 3px; }
 .console-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: var(--radius-full); }
-.console-line { animation: logAppear 0.35s ease forwards; opacity: 0; }
-.console-line .ts { color: var(--text-dim); margin-right: var(--space-sm); }
-.console-line .lvl { font-weight: 700; margin-right: var(--space-sm); }
+.console-line { animation: logAppear 0.3s ease forwards; opacity: 0; }
+@keyframes logAppear { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:translateX(0); } }
+.console-line .ts { color: var(--text-dim); margin-right: 6px; }
+.console-line .lvl { font-weight: 700; margin-right: 6px; }
 .console-line .lvl.info { color: var(--accent-cyan); }
 .console-line .lvl.warn { color: var(--accent-amber); }
 .console-line .lvl.error { color: var(--accent-red); }
 .console-line .lvl.success { color: var(--accent-green); }
 
-#toast-container { position: fixed; top: var(--space-xl); right: var(--space-xl); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--space-sm); pointer-events: none; }
-.toast { padding: var(--space-md) var(--space-lg); background: var(--bg-elevated); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font-family: var(--font-mono); font-size: 0.74rem; display: flex; align-items: center; gap: var(--space-sm); animation: toastIn 0.45s var(--ease-snap) forwards, toastOut 0.4s var(--ease-smooth) 3.5s forwards; pointer-events: all; box-shadow: var(--shadow-md); max-width: 380px; }
+#toast-container { position: fixed; top: 16px; right: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { padding: 12px 16px; background: var(--bg-elevated); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font-family: var(--font-mono); font-size: 0.7rem; display: flex; align-items: center; gap: 8px; pointer-events: all; box-shadow: var(--shadow-md); max-width: 340px; animation: toastIn 0.4s var(--ease-snap) forwards; }
+.toast.removing { animation: toastOut 0.35s var(--ease-smooth) forwards; }
 .toast.success { border-left: 3px solid var(--accent-green); }
 .toast.error { border-left: 3px solid var(--accent-red); }
 .toast.info { border-left: 3px solid var(--accent-cyan); }
-@keyframes toastIn { from { opacity: 0; transform: translateX(50px) scale(0.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
-@keyframes toastOut { to { opacity: 0; transform: translateX(50px) scale(0.95); } }
+@keyframes toastIn { from { opacity:0; transform:translateX(40px) scale(0.95); } to { opacity:1; transform:translateX(0) scale(1); } }
+@keyframes toastOut { to { opacity:0; transform:translateX(40px) scale(0.95); } }
 
-.modal { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.35s var(--ease-smooth); }
+.modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s var(--ease-smooth); }
 .modal.active { opacity: 1; visibility: visible; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-.modal-panel { position: relative; z-index: 1; max-width: 420px; width: 90%; text-align: center; transform: scale(0.88) translateY(20px); transition: transform 0.4s var(--ease-bounce); }
+.modal-panel { position: relative; z-index: 1; max-width: 420px; width: 92%; text-align: center; transform: scale(0.88) translateY(20px); transition: transform 0.4s var(--ease-bounce); padding: 32px; }
 .modal.active .modal-panel { transform: scale(1) translateY(0); }
-.modal-close { position: absolute; top: var(--space-md); right: var(--space-md); background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: all 0.25s ease; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
-.modal-close:hover { color: var(--accent-red); background: rgba(255,51,102,0.08); transform: rotate(90deg); }
-.modal-panel h3 { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 5px; margin-bottom: var(--space-lg); color: var(--text-primary); }
-#qr-canvas-container { display: flex; justify-content: center; margin-bottom: var(--space-md); }
-#qr-canvas-container canvas { border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); background: #fff; padding: var(--space-sm); }
-.modal-url { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); word-break: break-all; line-height: 1.6; }
+.modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-muted); font-size: 1rem; cursor: pointer; transition: all 0.25s ease; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); z-index: 2; }
+.modal-close:hover { color: var(--accent-red); background: rgba(255,51,102,0.08); }
+.modal-panel h3 { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 4px; margin-bottom: 16px; color: var(--text-primary); }
+#qr-canvas-container { display: flex; justify-content: center; margin-bottom: 12px; }
+#qr-canvas-container canvas { border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); background: #fff; padding: 8px; }
+.modal-url { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); word-break: break-all; line-height: 1.6; }
 
-@media (max-width: 1100px) { .dashboard-main { grid-template-columns: 1fr; } .sidebar { order: -1; } }
-@media (max-width: 680px) { .glass-panel { padding: var(--space-lg); } .forge-row { grid-template-columns: 1fr; } .forge-actions { grid-template-columns: 1fr; } .brand-title { font-size: 1.5rem; } .result-actions { flex-direction: column; } .dashboard-main { padding: var(--space-md); gap: var(--space-md); } .top-nav { padding: var(--space-sm) var(--space-md); } .nav-title { font-size: 0.78rem; } .nav-tag { display: none; } }
-@media (max-width: 420px) { .login-panel { padding: var(--space-lg); } .security-badges { gap: var(--space-sm); } .badge { font-size: 0.5rem; padding: 3px 6px; } }
+.edit-modal-panel { max-width: 480px; text-align: left; }
+.edit-modal-grid { display: flex; flex-direction: column; gap: 4px; }
+.edit-preview { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan); padding: 10px 12px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid rgba(0,229,255,0.1); word-break: break-all; text-align: center; margin-top: 4px; }
+.edit-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 16px; }
+
+.route-error-icon { font-size: 3rem; color: var(--accent-red); margin-bottom: 16px; animation: iconPulse 2s ease-in-out infinite; }
+
+@media (max-width: 1000px) {
+  .dashboard-main { grid-template-columns: 1fr; }
+  .sidebar { order: -1; }
+}
+@media (max-width: 600px) {
+  .glass-panel { padding: 24px 20px; }
+  .login-panel { max-width: 100%; }
+  .forge-row { grid-template-columns: 1fr; }
+  .forge-actions { grid-template-columns: 1fr; }
+  .brand-title { font-size: 1.3rem; letter-spacing: 3px; }
+  .result-actions { flex-direction: column; }
+  .dashboard-main { padding: 12px; gap: 12px; }
+  .top-nav { padding: 8px 12px; }
+  .nav-title { font-size: 0.75rem; }
+  .nav-tag { display: none; }
+  .url-item { flex-wrap: wrap; gap: 8px; }
+  .url-item-actions { width: 100%; justify-content: flex-end; }
+  .modal-panel { width: 96%; padding: 24px 16px; }
+  .edit-actions { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .url-item-meta { display: none; }
+}
+@media (max-width: 380px) {
+  .glass-panel { padding: 20px 14px; }
+  .security-badges { gap: 6px; }
+  .badge { font-size: 0.48rem; padding: 2px 5px; }
+}
+@keyframes shake { 0%,100% { transform:translateX(0); } 20%,60% { transform:translateX(-8px); } 40%,80% { transform:translateX(8px); } }
 ::selection { background: rgba(0,229,255,0.2); color: var(--text-primary); }
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: var(--radius-full); }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 </style>
-<base target="_blank">
 </head>
 <body>
 <div id="app">
   <canvas id="bg-canvas"></canvas>
   <div id="particles-layer"></div>
   <div id="noise-overlay"></div>
-  <div id="scanlines"></div>
   <div id="cursor-glow"></div>
 
   <section id="login-screen" class="screen active">
     <div class="glass-panel login-panel">
       <div class="logo-anim">
         <svg viewBox="0 0 100 100" class="logo-svg">
-          <circle cx="50" cy="50" r="40" class="logo-ring outer"/>
+          <circle cx="50" cy="50" r="40" class="logo-ring"/>
           <circle cx="50" cy="50" r="28" class="logo-ring inner"/>
           <path d="M50 20 L50 80 M20 50 L80 50" class="logo-cross"/>
           <circle cx="50" cy="50" r="6" class="logo-dot"/>
@@ -295,218 +304,131 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       </div>
       <div class="input-group">
         <input type="text" id="login-user" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false" autocapitalize="off">
-        <label class="vault-label">
-          <i class="fa-solid fa-user label-icon"></i>
-          <span class="label-text">IDENTITY</span>
-        </label>
-        <div class="input-border"></div>
-        <div class="input-glow"></div>
+        <label class="vault-label"><i class="fa-solid fa-user label-icon"></i> <span>IDENTITY</span></label>
+        <div class="input-border"></div><div class="input-glow"></div>
       </div>
       <div class="input-group">
         <input type="password" id="login-pass" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false">
-        <label class="vault-label">
-          <i class="fa-solid fa-lock label-icon"></i>
-          <span class="label-text">PASSPHRASE</span>
-        </label>
-        <div class="input-border"></div>
-        <div class="input-glow"></div>
-        <button type="button" class="toggle-pass" id="toggle-pass" title="Toggle visibility">
-          <i class="fa-solid fa-eye"></i>
-        </button>
+        <label class="vault-label"><i class="fa-solid fa-lock label-icon"></i> <span>PASSPHRASE</span></label>
+        <div class="input-border"></div><div class="input-glow"></div>
+        <button type="button" class="toggle-pass" id="toggle-pass"><i class="fa-solid fa-eye"></i></button>
       </div>
-      <button class="vault-btn primary" id="btn-login">
-        <span class="btn-text"><i class="fa-solid fa-shield-halved"></i> AUTHENTICATE</span>
-        <span class="btn-shimmer"></span>
-      </button>
+      <button class="vault-btn primary" id="btn-login"><span class="btn-text"><i class="fa-solid fa-shield-halved"></i> AUTHENTICATE</span><span class="btn-shimmer"></span></button>
       <div class="security-badges">
         <span class="badge"><i class="fa-solid fa-shield-cat"></i> AES-256</span>
-        <span class="badge"><i class="fa-solid fa-fingerprint"></i> SHA-3</span>
+        <span class="badge"><i class="fa-solid fa-fingerprint"></i> SHA-256</span>
         <span class="badge"><i class="fa-solid fa-lock"></i> SECURE</span>
       </div>
       <div class="console-log" id="login-log">
-        <span class="log-line"><span class="log-time">[00:00:00]</span> <span class="log-type">INFO</span> Vault system initialized...</span>
+        <span class="log-line"><span class="log-time">[00:00:00]</span> <span class="log-type">INFO</span> Vault system initialized</span>
       </div>
     </div>
   </section>
 
   <section id="route-screen" class="screen">
     <div class="glass-panel login-panel">
-      <div class="logo-anim">
-        <svg viewBox="0 0 100 100" class="logo-svg">
-          <circle cx="50" cy="50" r="40" class="logo-ring outer"/>
-          <circle cx="50" cy="50" r="28" class="logo-ring inner"/>
-          <path d="M50 20 L50 80 M20 50 L80 50" class="logo-cross"/>
-          <circle cx="50" cy="50" r="6" class="logo-dot"/>
-        </svg>
-        <h1 class="brand-title">
-          <span class="glitch" data-text="SVCODE">SVCODE</span>
-          <span class="brand-sub" id="route-title">REDIRECTING</span>
-        </h1>
-      </div>
-      <p id="route-message" style="text-align:center;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;"></p>
-      <div id="route-meta" style="text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.72rem;line-height:1.8;margin-bottom:20px;"></div>
-      <button class="vault-btn primary" id="route-home">
-        <span class="btn-text"><i class="fa-solid fa-house"></i> RETURN HOME</span>
-        <span class="btn-shimmer"></span>
-      </button>
+      <div class="route-error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h1 class="brand-title" style="margin-bottom:12px;">
+        <span class="brand-sub" id="route-title" style="font-size:0.7rem;letter-spacing:6px;">NOT FOUND</span>
+      </h1>
+      <p id="route-message" style="text-align:center;color:var(--text-secondary);margin-bottom:12px;line-height:1.7;font-size:0.88rem;"></p>
+      <div id="route-meta" style="text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.68rem;line-height:1.8;margin-bottom:16px;"></div>
+      <button class="vault-btn primary" id="route-home"><span class="btn-text"><i class="fa-solid fa-house"></i> RETURN HOME</span><span class="btn-shimmer"></span></button>
     </div>
   </section>
 
   <section id="dashboard-screen" class="screen">
     <nav class="top-nav">
       <div class="nav-brand">
-        <div class="nav-logo">
-          <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" class="nav-ring"/><circle cx="20" cy="20" r="4" class="nav-dot"/></svg>
-        </div>
+        <div class="nav-logo"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" class="nav-ring"/><circle cx="20" cy="20" r="4" class="nav-dot"/></svg></div>
         <span class="nav-title">SVCODE <span class="nav-tag">URL VAULT</span></span>
       </div>
       <div class="nav-actions">
-        <div class="status-indicator">
-          <span class="status-dot"></span>
-          <span class="status-text">SECURE</span>
-        </div>
-        <button class="nav-btn" id="btn-logout" title="Terminate Session">
-          <i class="fa-solid fa-power-off"></i>
-        </button>
+        <div class="status-indicator"><span class="status-dot"></span> <span>SECURE</span></div>
+        <button class="nav-btn" id="btn-logout" title="Terminate Session"><i class="fa-solid fa-power-off"></i></button>
       </div>
     </nav>
     <main class="dashboard-main">
       <div class="creator-section">
-        <div class="glass-card creator-card">
+        <div class="glass-card">
           <div class="card-header">
             <div class="card-icon pulse-icon"><i class="fa-solid fa-link"></i></div>
-            <div class="card-meta">
-              <h2>URL FORGE</h2>
-              <p>Generate cryptographically secure short links</p>
-            </div>
+            <div class="card-meta"><h2>URL FORGE</h2><p>Generate cryptographically secure short links</p></div>
           </div>
-          <div class="forge-inputs">
+          <div>
             <div class="input-group large">
               <input type="url" id="url-input" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false">
-              <label class="vault-label">
-                <i class="fa-solid fa-globe label-icon"></i>
-                <span class="label-text">TARGET URL</span>
-              </label>
-              <div class="input-border"></div>
-              <div class="input-glow"></div>
+              <label class="vault-label"><i class="fa-solid fa-globe label-icon"></i> <span>TARGET URL</span></label>
+              <div class="input-border"></div><div class="input-glow"></div>
             </div>
             <div class="forge-row">
               <div class="input-group">
                 <input type="text" id="slug-input" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false" maxlength="32">
-                <label class="vault-label">
-                  <i class="fa-solid fa-code label-icon"></i>
-                  <span class="label-text">CUSTOM SLUG (optional)</span>
-                </label>
-                <div class="input-border"></div>
-                <div class="input-glow"></div>
+                <label class="vault-label"><i class="fa-solid fa-code label-icon"></i> <span>SLUG (optional)</span></label>
+                <div class="input-border"></div><div class="input-glow"></div>
               </div>
-              <div class="input-group select-group">
-                <select id="prefix-select" class="vault-select">
+              <div class="input-group">
+                <select id="prefix-select" class="vault-select" style="padding-left:14px;">
                   <option value="">/</option>
                   <option value="sub/">sub/</option>
                   <option value="r/">r/</option>
                   <option value="go/">go/</option>
                   <option value="v1/">v1/</option>
-                  <option value="cdn/">cdn/</option>
-                  <option value="ref/">ref/</option>
                   <option value="s/">s/</option>
                   <option value="x/">x/</option>
                 </select>
-                <label class="vault-label">
-                  <i class="fa-solid fa-sitemap label-icon"></i>
-                  <span class="label-text">PREFIX</span>
-                </label>
-                <div class="input-border"></div>
               </div>
             </div>
             <div class="input-group">
               <input type="text" id="label-input" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false" maxlength="60">
-              <label class="vault-label">
-                <i class="fa-solid fa-tag label-icon"></i>
-                <span class="label-text">LABEL (optional)</span>
-              </label>
-              <div class="input-border"></div>
-              <div class="input-glow"></div>
+              <label class="vault-label"><i class="fa-solid fa-tag label-icon"></i> <span>LABEL (optional)</span></label>
+              <div class="input-border"></div><div class="input-glow"></div>
             </div>
           </div>
           <div class="forge-actions">
-            <button class="vault-btn secondary" id="btn-random">
-              <span class="btn-text"><i class="fa-solid fa-shuffle"></i> RANDOMIZE</span>
-            </button>
-            <button class="vault-btn primary" id="btn-create">
-              <span class="btn-text"><i class="fa-solid fa-hammer"></i> FORGE URL</span>
-              <span class="btn-shimmer"></span>
-            </button>
+            <button class="vault-btn secondary" id="btn-random"><span class="btn-text"><i class="fa-solid fa-shuffle"></i> RANDOM</span></button>
+            <button class="vault-btn primary" id="btn-create"><span class="btn-text"><i class="fa-solid fa-hammer"></i> FORGE URL</span><span class="btn-shimmer"></span></button>
           </div>
           <div class="result-area" id="result-area">
             <div class="result-glow"></div>
-            <div class="result-content">
-              <div class="result-label"><i class="fa-solid fa-check-circle"></i> GENERATED SHORT URL</div>
-              <div class="result-url" id="result-url"></div>
-              <div class="result-meta">
-                <span class="meta-item"><i class="fa-regular fa-clock"></i> <span id="result-time"></span></span>
-                <span class="meta-item"><i class="fa-solid fa-hashtag"></i> <span id="result-hash"></span></span>
-              </div>
-              <div class="result-actions">
-                <button class="res-btn" id="btn-copy" title="Copy to Clipboard">
-                  <i class="fa-regular fa-copy"></i> COPY
-                </button>
-                <button class="res-btn" id="btn-qr" title="Generate QR Code">
-                  <i class="fa-solid fa-qrcode"></i> QR
-                </button>
-                <button class="res-btn" id="btn-open" title="Open Link">
-                  <i class="fa-solid fa-arrow-up-right-from-square"></i> OPEN
-                </button>
-              </div>
+            <div class="result-label"><i class="fa-solid fa-check-circle"></i> GENERATED SHORT URL</div>
+            <div class="result-url" id="result-url"></div>
+            <div class="result-meta">
+              <span class="meta-item"><i class="fa-regular fa-clock"></i> <span id="result-time"></span></span>
+              <span class="meta-item"><i class="fa-solid fa-hashtag"></i> <span id="result-hash"></span></span>
+            </div>
+            <div class="result-actions">
+              <button class="res-btn" id="btn-copy"><i class="fa-regular fa-copy"></i> COPY</button>
+              <button class="res-btn" id="btn-qr"><i class="fa-solid fa-qrcode"></i> QR</button>
+              <button class="res-btn" id="btn-open"><i class="fa-solid fa-arrow-up-right-from-square"></i> OPEN</button>
             </div>
           </div>
         </div>
-        <div class="glass-card list-card">
+        <div class="glass-card" style="margin-top:16px;">
           <div class="card-header compact">
             <div class="card-icon"><i class="fa-solid fa-list-ul"></i></div>
-            <div class="card-meta">
-              <h2>FORGED LINKS</h2>
-              <p id="link-count">0 active short URLs</p>
-            </div>
-            <button class="vault-btn ghost" id="btn-clear">
-              <span><i class="fa-solid fa-trash-can"></i> CLEAR ALL</span>
-            </button>
+            <div class="card-meta"><h2>FORGED LINKS</h2><p id="link-count">0 active short URLs</p></div>
+            <button class="vault-btn ghost" id="btn-clear"><span><i class="fa-solid fa-trash-can"></i> CLEAR ALL</span></button>
           </div>
           <div class="url-list" id="url-list">
-            <div class="empty-state">
-              <div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div>
-              <p>No forged links yet</p>
-              <span>Create your first short URL above</span>
-            </div>
+            <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><p>No forged links yet</p><span>Create your first short URL above</span></div>
           </div>
         </div>
       </div>
       <aside class="sidebar">
-        <div class="glass-card stats-card">
+        <div class="glass-card">
           <div class="card-header compact">
             <div class="card-icon spin-icon"><i class="fa-solid fa-chart-line"></i></div>
             <div class="card-meta"><h2>ANALYTICS</h2></div>
           </div>
           <div class="stat-grid">
-            <div class="stat-item">
-              <div class="stat-value" id="stat-total">0</div>
-              <div class="stat-label">TOTAL</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="stat-clicks">0</div>
-              <div class="stat-label">CLICKS</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="stat-avg">0</div>
-              <div class="stat-label">AVG LEN</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="stat-entropy">0</div>
-              <div class="stat-label">ENTROPY</div>
-            </div>
+            <div class="stat-item"><div class="stat-value" id="stat-total">0</div><div class="stat-label">TOTAL</div></div>
+            <div class="stat-item"><div class="stat-value" id="stat-clicks">0</div><div class="stat-label">CLICKS</div></div>
+            <div class="stat-item"><div class="stat-value" id="stat-avg">0</div><div class="stat-label">AVG LEN</div></div>
+            <div class="stat-item"><div class="stat-value" id="stat-active">0</div><div class="stat-label">ACTIVE</div></div>
           </div>
         </div>
-        <div class="glass-card console-card">
+        <div class="glass-card">
           <div class="card-header compact">
             <div class="card-icon blink-icon"><i class="fa-solid fa-terminal"></i></div>
             <div class="card-meta"><h2>SYSTEM LOG</h2></div>
@@ -518,7 +440,9 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       </aside>
     </main>
   </section>
+
   <div id="toast-container"></div>
+
   <div id="qr-modal" class="modal">
     <div class="modal-backdrop"></div>
     <div class="glass-panel modal-panel">
@@ -528,6 +452,7 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       <p class="modal-url" id="modal-url-text"></p>
     </div>
   </div>
+
   <div id="edit-modal" class="modal">
     <div class="modal-backdrop"></div>
     <div class="glass-panel modal-panel edit-modal-panel">
@@ -537,514 +462,424 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       <div class="edit-modal-grid">
         <div class="input-group large">
           <input type="url" id="edit-target" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false">
-          <label class="vault-label">
-            <i class="fa-solid fa-globe label-icon"></i>
-            <span class="label-text">TARGET URL</span>
-          </label>
-          <div class="input-border"></div>
-          <div class="input-glow"></div>
+          <label class="vault-label"><i class="fa-solid fa-globe label-icon"></i> <span>TARGET URL</span></label>
+          <div class="input-border"></div><div class="input-glow"></div>
         </div>
         <div class="forge-row">
           <div class="input-group">
             <input type="text" id="edit-slug" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false" maxlength="32">
-            <label class="vault-label">
-              <i class="fa-solid fa-code label-icon"></i>
-              <span class="label-text">CUSTOM SLUG</span>
-            </label>
-            <div class="input-border"></div>
-            <div class="input-glow"></div>
+            <label class="vault-label"><i class="fa-solid fa-code label-icon"></i> <span>SLUG</span></label>
+            <div class="input-border"></div><div class="input-glow"></div>
           </div>
-          <div class="input-group select-group">
-            <select id="edit-prefix" class="vault-select">
+          <div class="input-group">
+            <select id="edit-prefix" class="vault-select" style="padding-left:14px;">
               <option value="">/</option>
               <option value="sub/">sub/</option>
               <option value="r/">r/</option>
               <option value="go/">go/</option>
               <option value="v1/">v1/</option>
-              <option value="cdn/">cdn/</option>
-              <option value="ref/">ref/</option>
               <option value="s/">s/</option>
               <option value="x/">x/</option>
             </select>
-            <label class="vault-label">
-              <i class="fa-solid fa-sitemap label-icon"></i>
-              <span class="label-text">PREFIX</span>
-            </label>
-            <div class="input-border"></div>
           </div>
         </div>
         <div class="input-group">
           <input type="text" id="edit-label" class="vault-input" placeholder=" " autocomplete="off" spellcheck="false" maxlength="60">
-          <label class="vault-label">
-            <i class="fa-solid fa-tag label-icon"></i>
-            <span class="label-text">LABEL</span>
-          </label>
-          <div class="input-border"></div>
-          <div class="input-glow"></div>
+          <label class="vault-label"><i class="fa-solid fa-tag label-icon"></i> <span>LABEL</span></label>
+          <div class="input-border"></div><div class="input-glow"></div>
         </div>
         <div class="edit-preview" id="edit-preview"></div>
       </div>
       <div class="edit-actions">
         <button class="vault-btn secondary" id="btn-cancel-edit"><span class="btn-text"><i class="fa-solid fa-xmark"></i> CANCEL</span></button>
-        <button class="vault-btn primary" id="btn-save-edit"><span class="btn-text"><i class="fa-solid fa-floppy-disk"></i> SAVE CHANGES</span><span class="btn-shimmer"></span></button>
+        <button class="vault-btn primary" id="btn-save-edit"><span class="btn-text"><i class="fa-solid fa-floppy-disk"></i> SAVE</span><span class="btn-shimmer"></span></button>
       </div>
     </div>
   </div>
 </div>
 <script>
-(function() {
-  'use strict';
+(function(){
+'use strict';
 
-  var TOKEN_KEY = '_sv';
-  var state = { auth: false, user: null, token: localStorage.getItem(TOKEN_KEY) || '', urls: [] };
+var TK='_sv';
+var S={auth:false,user:null,token:localStorage.getItem(TK)||'',urls:[]};
+var lastShort='';
 
-  function el(s) { return document.querySelector(s); }
-  function origin() { return window.location.origin || (window.location.protocol + '//' + window.location.host); }
-  function route(prefix, slug) {
-    var p = String(prefix || '').replace(/^\/+|\/+$/g, '');
-    var s = String(slug || '').replace(/^\/+|\/+$/g, '');
-    return s ? '/' + (p ? p + '/' : '') + s : '/';
+function $(s){return document.querySelector(s)}
+function esc(v){var s=String(v==null?'':v);s=s.replace(/&/g,'&amp;');s=s.replace(/[<]/g,'&lt;');s=s.replace(/[>]/g,'&gt;');s=s.replace(/[\x22]/g,'&quot;');return s;}
+function ts(){return new Date().toTimeString().slice(0,8);}
+function rSlug(n){n=n||8;var c='abcdefghijklmnopqrstuvwxyz01234567849';var r='';for(var i=0;i<n;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function mkRoute(pr,sl){var p=String(pr||'').replace(/^\/+|\/+$/g,'');var s=String(sl||'').replace(/^\/+|\/+$/g,'');return s?'/'+(p?p+'/':'')+s:'/';}
+function fmtTime(v){var d=v instanceof Date?v:new Date(v);return isNaN(d)?'':d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false});}
+
+function saveToken(){if(S.token)localStorage.setItem(TK,S.token);else localStorage.removeItem(TK);}
+
+function showScreen(name){
+  var screens=['login-screen','route-screen','dashboard-screen'];
+  var map={login:'login-screen',route:'route-screen',dashboard:'dashboard-screen'};
+  for(var i=0;i<screens.length;i++){
+    var el=document.getElementById(screens[i]);
+    el.className=screens[i]===map[name]?'screen active':'screen';
   }
-  function shortUrl(host, prefix, slug, proto) { return (proto || location.protocol.replace(':', '')) + '://' + host + route(prefix, slug); }
-  function now() { return Date.now(); }
-  function esc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-  function ts() { return new Date().toTimeString().slice(0, 8); }
-  function slug(n) { n = n || 8; return 'x' + Math.random().toString(36).slice(2, 2 + n); }
-  function fmtTime(v) { var d = v instanceof Date ? v : new Date(v); if (isNaN(d)) d = new Date(); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }); }
+}
 
-  function saveToken() {
-    if (state.token) localStorage.setItem(TOKEN_KEY, state.token);
-    else localStorage.removeItem(TOKEN_KEY);
+function toast(msg,type){
+  var c=document.getElementById('toast-container');
+  var d=document.createElement('div');
+  d.className='toast '+(type||'info');
+  var icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+  d.innerHTML='<i class="fa-solid '+(icons[type]||icons.info)+'"></i> '+esc(msg);
+  c.appendChild(d);
+  setTimeout(function(){d.classList.add('removing');setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},400);},3500);
+}
+
+function log(msg,type,target){
+  var c=target==='dash'?document.getElementById('console-body'):document.getElementById('login-log');
+  if(!c)return;
+  var d=document.createElement('div');
+  var tc={info:'info',warn:'warn',error:'error',success:'success'}[type]||'info';
+  if(target==='dash'){
+    d.className='console-line';
+    d.innerHTML='<span class="ts">'+ts()+'</span> <span class="lvl '+tc+'">'+type.toUpperCase()+'</span> '+esc(msg);
+  }else{
+    d.className='log-line';
+    d.innerHTML='<span class="log-time">['+ts()+']</span> <span class="log-type '+tc+'">'+type.toUpperCase()+'</span> '+esc(msg);
   }
+  c.appendChild(d);
+  c.scrollTop=c.scrollHeight;
+  while(c.children.length>50)c.removeChild(c.firstChild);
+}
 
-  function showScreen(name) {
-    el('#login-screen').className = name === 'login' ? 'screen active' : 'screen';
-    el('#route-screen').className = name === 'route' ? 'screen active' : 'screen';
-    el('#dashboard-screen').className = name === 'dashboard' ? 'screen active' : 'screen';
+function normTime(v){if(!v)return new Date();var d=v instanceof Date?v:new Date(v);return isNaN(d.getTime())?new Date():d;}
+
+function xhr(method,url,body,cb){
+  var x=new XMLHttpRequest();
+  x.open(method,url,true);
+  if(body!==null&&body!==undefined)x.setRequestHeader('Content-Type','application/json');
+  if(S.token)x.setRequestHeader('Authorization',S.token);
+  x.onreadystatechange=function(){
+    if(x.readyState!==4)return;
+    var d={};
+    try{d=x.responseText?JSON.parse(x.responseText):{};}catch(e){}
+    if(x.status>=200&&x.status<300)cb(null,d);
+    else cb(new Error(d.error||'Error '+x.status),d);
+  };
+  x.onerror=function(){cb(new Error('Network error'));};
+  x.send(body!==null&&body!==undefined?(typeof body==='string'?body:JSON.stringify(body)):null);
+}
+
+function renderLinks(){
+  var list=document.getElementById('url-list');
+  var count=document.getElementById('link-count');
+  count.textContent=S.urls.length+' active short URL'+(S.urls.length!==1?'s':'');
+  if(S.urls.length===0){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><p>No forged links yet</p><span>Create your first short URL above</span></div>';
+    return;
   }
-
-  function toast(msg, type) {
-    var c = el('#toast-container');
-    var d = document.createElement('div');
-    d.className = 'toast ' + (type || 'info');
-    var icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
-    d.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + msg;
-    c.appendChild(d);
-    setTimeout(function() { if (d.parentNode) d.parentNode.removeChild(d); }, 4000);
+  var h='';
+  for(var i=0;i<S.urls.length;i++){
+    var u=S.urls[i];
+    var idx=String(S.urls.length-i).padStart(2,'0');
+    var short=esc(u.short);
+    var target=esc(u.target);
+    var label=u.label?esc(u.label):'';
+    h+='<div class="url-item" data-idx="'+i+'" style="animation-delay:'+Math.min(i*0.04,0.4)+'s">'
+      +'<span class="url-item-index">#'+idx+'</span>'
+      +'<div class="url-item-info">'
+      +'<div class="url-item-short">'+short+'</div>'
+      +'<div class="url-item-target">'+target+'</div>'
+      +(label?'<div class="url-item-label-tag">'+label+'</div>':'')
+      +'</div>'
+      +'<div class="url-item-meta">'+fmtTime(u.time)+'<br>'+(u.clicks||0)+' clicks</div>'
+      +'<div class="url-item-actions">'
+      +'<button class="url-item-btn" data-act="copy" data-i="'+i+'" title="Copy"><i class="fa-regular fa-copy"></i></button>'
+      +'<button class="url-item-btn" data-act="open" data-i="'+i+'" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>'
+      +'<button class="url-item-btn" data-act="edit" data-i="'+i+'" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'
+      +'<button class="url-item-btn" data-act="qr" data-i="'+i+'" title="QR"><i class="fa-solid fa-qrcode"></i></button>'
+      +'<button class="url-item-btn del" data-act="del" data-i="'+i+'" title="Delete"><i class="fa-solid fa-trash"></i></button>'
+      +'</div></div>';
   }
+  list.innerHTML=h;
+}
 
-  function log(msg, type, target) {
-    var c = target === 'dash' ? el('#console-body') : el('#login-log');
-    if (!c) return;
-    var d = document.createElement('div');
-    var cls = target === 'dash' ? 'console-line' : 'log-line';
-    var tc = { info: 'info', warn: 'warn', error: 'error', success: 'success' }[type] || 'info';
-    d.className = cls;
-    if (target === 'dash') {
-      d.innerHTML = '<span class="ts">' + ts() + '</span> <span class="lvl ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
-    } else {
-      d.innerHTML = '<span class="log-time">[' + ts() + ']</span> <span class="log-type ' + tc + '">' + type.toUpperCase() + '</span> ' + msg;
-    }
-    c.appendChild(d);
-    c.scrollTop = c.scrollHeight;
-    while (c.children.length > 60) c.removeChild(c.firstChild);
+function updateStats(){
+  var clicks=0,len=0,active=0;
+  for(var i=0;i<S.urls.length;i++){
+    clicks+=S.urls[i].clicks||0;
+    len+=String(S.urls[i].slug||'').length;
+    if(S.urls[i].clicks>0)active++;
   }
+  document.getElementById('stat-total').textContent=S.urls.length;
+  document.getElementById('stat-clicks').textContent=clicks;
+  document.getElementById('stat-avg').textContent=S.urls.length?(len/S.urls.length).toFixed(1):'0';
+  document.getElementById('stat-active').textContent=active;
+}
 
-  function normTime(v) {
-    if (!v) return new Date();
-    var d = v instanceof Date ? v : new Date(v);
-    return isNaN(d.getTime()) ? new Date() : d;
-  }
-
-  /* ===== XHR — the only network function ===== */
-  function xhr(method, url, body, cb) {
-    var x = new XMLHttpRequest();
-    x.open(method, url, true);
-    if (body !== null && body !== undefined) {
-      x.setRequestHeader('Content-Type', 'application/json');
-    }
-    if (state.token) x.setRequestHeader('Authorization', state.token);
-    x.onreadystatechange = function() {
-      if (x.readyState !== 4) return;
-      var d = {};
-      try { d = x.responseText ? JSON.parse(x.responseText) : {}; } catch(e) { d = {}; }
-      if (x.status >= 200 && x.status < 300) cb(null, d);
-      else cb(new Error(d.error || 'Error ' + x.status), d);
-    };
-    x.onerror = function() { cb(new Error('Network error')); };
-    x.send(body !== null && body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : null);
-  }
-
-  function renderLinks() {
-    var list = el('#url-list');
-    var count = el('#link-count');
-    count.textContent = state.urls.length + ' active short URL' + (state.urls.length !== 1 ? 's' : '');
-    if (state.urls.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><p>No forged links yet</p><span>Create your first short URL above</span></div>';
-      return;
-    }
-    var h = '';
-    for (var i = 0; i < state.urls.length; i++) {
-      var u = state.urls[i];
-      var idx = String(state.urls.length - i).padStart(2, '0');
-      var sj = String(u.short).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-      h += '<div class="url-item" style="animation-delay:' + (i * 0.05) + 's">' +
-        '<span class="url-item-index">#' + idx + '</span>' +
-        '<div class="url-item-info">' +
-        '<div class="url-item-short">' + esc(u.short) + '</div>' +
-        '<div class="url-item-target">' + esc(u.target) + '</div>' +
-        (u.label ? '<div class="url-item-label">' + esc(u.label) + '</div>' : '') +
-        '</div>' +
-        '<span class="url-item-time">' + fmtTime(u.time) + '<br>' + (u.clicks || 0) + ' clicks</span>' +
-        '<div class="url-item-actions">' +
-        '<button class="url-item-btn" onclick="window._cpy(\'' + sj + '\')" title="Copy"><i class="fa-regular fa-copy"></i></button>' +
-        '<button class="url-item-btn" onclick="window.open(\'' + sj + '\',\'_blank\')" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
-        '<button class="url-item-btn" onclick="window._edit(' + u.id + ')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
-        '<button class="url-item-btn" onclick="window._qr(\'' + sj + '\')" title="QR"><i class="fa-solid fa-qrcode"></i></button>' +
-        '<button class="url-item-btn delete" onclick="window._del(' + u.id + ')" title="Delete"><i class="fa-solid fa-trash"></i></button>' +
-        '</div></div>';
-    }
-    list.innerHTML = h;
-  }
-
-  function updateStats() {
-    var clicks = 0, len = 0;
-    for (var i = 0; i < state.urls.length; i++) {
-      clicks += state.urls[i].clicks || 0;
-      len += String(state.urls[i].slug || '').length;
-    }
-    el('#stat-total').textContent = state.urls.length;
-    el('#stat-clicks').textContent = clicks;
-    el('#stat-avg').textContent = state.urls.length ? (len / state.urls.length).toFixed(1) : 0;
-    el('#stat-entropy').textContent = state.urls.length ? esc(state.urls[0].slug || '').length : 0;
-  }
-
-  function loadLinks() {
-    xhr('GET', '/api/links', null, function(err, data) {
-      if (err) { log('Sync failed', 'warn', 'dash'); return; }
-      state.urls = Array.isArray(data.links) ? data.links : [];
-      for (var i = 0; i < state.urls.length; i++) state.urls[i].time = normTime(state.urls[i].time);
-      renderLinks();
-      updateStats();
-      log('Links loaded', 'success', 'dash');
-    });
-  }
-
-  /* ===== AUTH ===== */
-  function doLogin() {
-    var u = el('#login-user').value.trim();
-    var p = el('#login-pass').value;
-    if (!u || !p) {
-      toast('Enter credentials', 'error');
-      return;
-    }
-    log('Authenticating...', 'info');
-    var body = JSON.stringify({ username: u, password: p });
-    xhr('POST', '/api/auth', body, function(err, data) {
-      if (err) {
-        log('Auth failed', 'error');
-        toast('Access denied', 'error');
-        var panel = el('.login-panel');
-        if (panel) {
-          panel.style.animation = 'none';
-          void panel.offsetHeight;
-          panel.style.animation = 'shake 0.5s ease';
-        }
-        return;
-      }
-      state.auth = true;
-      state.user = data.user;
-      state.token = data.token;
-      saveToken();
-      log('Authenticated', 'success');
-      toast('Access granted', 'success');
-      loadLinks();
-      showScreen('dashboard');
-      log('Dashboard ready', 'success', 'dash');
-    });
-  }
-
-  function autoLogin() {
-    if (!state.token) { showScreen('login'); return; }
-    xhr('GET', '/api/me', null, function(err, data) {
-      if (err) {
-        state.token = '';
-        saveToken();
-        showScreen('login');
-        return;
-      }
-      state.auth = true;
-      state.user = data.user;
-      state.urls = Array.isArray(data.links) ? data.links : [];
-      for (var i = 0; i < state.urls.length; i++) state.urls[i].time = normTime(state.urls[i].time);
-      showScreen('dashboard');
-      toast('Welcome back', 'success');
-      log('Session restored', 'success', 'dash');
-      renderLinks();
-      updateStats();
-    });
-  }
-
-  function doLogout() {
-    state.auth = false;
-    state.user = null;
-    state.token = '';
-    state.urls = [];
-    saveToken();
-    showScreen('login');
-    el('#login-user').value = '';
-    el('#login-pass').value = '';
-    el('#result-area').className = 'result-area';
-    toast('Logged out', 'info');
-  }
-
-  /* ===== ROUTING ===== */
-  function curPath() {
-    var h = (window.location.hash || '').replace(/^#/, '').trim();
-    if (h && h.charAt(0) === '/') return h;
-    if (h) return '/' + h;
-    return window.location.pathname || '/';
-  }
-
-  function handleRoute() {
-    var p = curPath();
-    if (!p || p === '/' || p === '/index.html') {
-      if (state.auth) showScreen('dashboard');
-      else showScreen('login');
-      return;
-    }
-    if (p === '/404' || p === '/login') {
-      showScreen('route');
-      el('#route-title').textContent = '404 NOT FOUND';
-      el('#route-message').innerHTML = 'Route not found.';
-      el('#route-meta').textContent = p;
-      return;
-    }
-    for (var i = 0; i < state.urls.length; i++) {
-      if (state.urls[i].route === p && state.urls[i].target) {
-        window.location.replace(state.urls[i].target);
-        return;
-      }
-    }
-    showScreen('route');
-    el('#route-title').textContent = '404 NOT FOUND';
-    el('#route-message').innerHTML = 'This short link does not exist.';
-    el('#route-meta').textContent = p;
-  }
-
-  /* ===== CRUD ===== */
-  function hasRoute(r, exId) {
-    for (var i = 0; i < state.urls.length; i++) {
-      if (state.urls[i].id !== exId && state.urls[i].route === r) return true;
-    }
-    return false;
-  }
-
-  function createLink() {
-    var t = el('#url-input').value.trim();
-    if (!t) { toast('Enter target URL', 'error'); return; }
-    if (!/^https?:\/\//i.test(t)) t = 'https://' + t;
-    var pr = el('#prefix-select').value;
-    var sl = el('#slug-input').value.trim() || slug(8);
-    var r = route(pr, sl);
-    if (isReservedRoute(r)) { toast('Reserved route', 'error'); return; }
-    if (hasRoute(r)) { toast('Slug exists', 'error'); return; }
-    xhr('POST', '/api/links', { target: t, prefix: pr, slug: sl, label: el('#label-input').value.trim() }, function(err, data) {
-      if (err) { toast('Create failed: ' + err.message, 'error'); return; }
-      var e = data.link;
-      e.time = normTime(e.time);
-      state.urls.unshift(e);
-      renderLinks();
-      updateStats();
-      var ra = el('#result-area');
-      var ru = el('#result-url');
-      try {
-        var h = new URL(e.short).host;
-        var pl = e.route.replace(/^\//, '');
-        ru.dataset.shortUrl = e.short;
-        ru.innerHTML = '<span class="url-domain">' + esc(h) + '/</span><span class="url-path">' + esc(pl.replace(/\/[^/]+$/, '/')) + '</span><span class="url-slug">' + esc(sl) + '</span>';
-      } catch(ex) {
-        ru.dataset.shortUrl = e.short;
-        ru.textContent = e.short;
-      }
-      el('#result-time').textContent = new Date(e.time).toLocaleString();
-      el('#result-hash').textContent = e.hash || '';
-      ra.className = 'result-area show';
-      toast('URL created', 'success');
-      el('#url-input').value = '';
-      el('#slug-input').value = '';
-      el('#label-input').value = '';
-    });
-  }
-
-  function isReservedRoute(r) {
-    var res = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/favicon.svg', '/index.html'];
-    for (var i = 0; i < res.length; i++) {
-      if (r === res[i] || r.indexOf(res[i] + '/') === 0) return true;
-    }
-    return false;
-  }
-
-  function doDelete(id) {
-    xhr('DELETE', '/api/links/' + id, null, function(err) {
-      if (err) { toast('Delete failed', 'error'); return; }
-      state.urls = state.urls.filter(function(l) { return l.id !== id; });
-      renderLinks();
-      updateStats();
-      toast('Deleted', 'info');
-    });
-  }
-
-  function doClearAll() {
-    if (state.urls.length === 0) return;
-    if (!confirm('Delete ALL links?')) return;
-    var done = 0;
-    var total = state.urls.length;
-    var hasErr = false;
-    for (var i = 0; i < state.urls.length; i++) {
-      (function(id) {
-        xhr('DELETE', '/api/links/' + id, null, function(err) {
-          done++;
-          if (err) hasErr = true;
-          if (done >= total) {
-            state.urls = [];
-            renderLinks();
-            updateStats();
-            el('#result-area').className = 'result-area';
-            toast(hasErr ? 'Partial clear' : 'All cleared', 'info');
-          }
-        });
-      })(state.urls[i].id);
-    }
-  }
-
-  function showEdit(id) {
-    for (var i = 0; i < state.urls.length; i++) {
-      if (state.urls[i].id === id) {
-        var e = state.urls[i];
-        el('#edit-id').value = e.id;
-        el('#edit-target').value = e.target || '';
-        el('#edit-slug').value = e.slug || '';
-        el('#edit-prefix').value = e.prefix || '';
-        el('#edit-label').value = e.label || '';
-        el('#edit-preview').textContent = e.short || (origin() + route(e.prefix, e.slug));
-        el('#edit-modal').className = 'modal active';
-        return;
-      }
-    }
-  }
-
-  function saveEdit() {
-    var id = el('#edit-id').value;
-    var target = el('#edit-target').value.trim();
-    var slugVal = el('#edit-slug').value.trim();
-    var prefix = el('#edit-prefix').value;
-    var label = el('#edit-label').value.trim();
-    if (!target) { toast('Target required', 'error'); return; }
-    if (!/^https?:\/\//i.test(target)) target = 'https://' + target;
-    if (!slugVal) { toast('Slug required', 'error'); return; }
-    xhr('PUT', '/api/links/' + id, { target: target, prefix: prefix, slug: slugVal, label: label }, function(err, data) {
-      if (err) { toast('Update failed', 'error'); return; }
-      for (var i = 0; i < state.urls.length; i++) {
-        if (String(state.urls[i].id) === String(id)) {
-          state.urls[i] = data.link;
-          state.urls[i].time = normTime(state.urls[i].time);
-          break;
-        }
-      }
-      renderLinks();
-      updateStats();
-      el('#edit-modal').className = 'modal';
-      toast('Updated', 'success');
-    });
-  }
-
-  function copyText(txt) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(function() { toast('Copied', 'success'); }).catch(function() { toast('Copy failed', 'error'); });
-    } else {
-      var t = document.createElement('textarea');
-      t.value = txt;
-      t.style.cssText = 'position:fixed;left:-9999px';
-      document.body.appendChild(t);
-      t.select();
-      try { document.execCommand('copy'); toast('Copied', 'success'); } catch(e) { toast('Copy failed', 'error'); }
-      document.body.removeChild(t);
-    }
-  }
-
-  function showQR(url) {
-    var mc = el('#qr-canvas-container');
-    var mt = el('#modal-url-text');
-    mc.innerHTML = '';
-    mt.textContent = url;
-    var sz = 200;
-    var cv = document.createElement('canvas');
-    cv.width = sz;
-    cv.height = sz;
-    var cx = cv.getContext('2d');
-    cx.fillStyle = '#fff';
-    cx.fillRect(0, 0, sz, sz);
-    cx.fillStyle = '#000';
-    var cs = sz / 25;
-    var pat = [];
-    var i, j;
-    for (i = 0; i < 25; i++) { pat[i] = []; for (j = 0; j < 25; j++) pat[i][j] = Math.random() > 0.5 ? 1 : 0; }
-    function finder(x, y) {
-      for (var ii = 0; ii < 7; ii++) for (var jj = 0; jj < 7; jj++) {
-        if (ii === 0 || ii === 6 || jj === 0 || jj === 6 || (ii >= 2 && ii <= 4 && jj >= 2 && jj <= 4)) pat[x + ii][y + jj] = 1;
-        else pat[x + ii][y + jj] = 0;
-      }
-    }
-    finder(0, 0); finder(18, 0); finder(0, 18);
-    for (i = 0; i < 25; i++) for (j = 0; j < 25; j++) if (pat[i][j]) cx.fillRect(j * cs, i * cs, cs, cs);
-    cx.fillStyle = '#333'; cx.font = '8px monospace'; cx.textAlign = 'center';
-    cx.fillText(url.slice(0, 30), sz / 2, sz - 4);
-    mc.appendChild(cv);
-    el('#qr-modal').className = 'modal active';
-  }
-
-  function randomSlug() {
-    el('#slug-input').value = slug(10);
-  }
-
-  /* ===== EXPOSE FOR ONCLICK ===== */
-  window._cpy = copyText;
-  window._del = doDelete;
-  window._edit = showEdit;
-  window._qr = showQR;
-
-  /* ===== BIND EVENTS ===== */
-  el('#btn-login').addEventListener('click', doLogin);
-  el('#login-user').addEventListener('keydown', function(e) { if (e.keyCode === 13 || e.key === 'Enter') doLogin(); });
-  el('#login-pass').addEventListener('keydown', function(e) { if (e.keyCode === 13 || e.key === 'Enter') doLogin(); });
-  el('#toggle-pass').addEventListener('click', function() {
-    var inp = el('#login-pass');
-    var icon = this.querySelector('i');
-    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash'; }
-    else { inp.type = 'password'; icon.className = 'fa-solid fa-eye'; }
+function loadLinks(){
+  xhr('GET','/api/links',null,function(err,data){
+    if(err){log('Sync failed','warn','dash');return;}
+    S.urls=Array.isArray(data.links)?data.links:[];
+    for(var i=0;i<S.urls.length;i++)S.urls[i].time=normTime(S.urls[i].time);
+    renderLinks();
+    updateStats();
+    log('Links loaded ('+S.urls.length+')','success','dash');
   });
-  el('#btn-create').addEventListener('click', createLink);
-  el('#btn-random').addEventListener('click', randomSlug);
-  el('#btn-clear').addEventListener('click', doClearAll);
-  el('#btn-logout').addEventListener('click', doLogout);
-  el('#btn-save-edit').addEventListener('click', saveEdit);
-  el('#btn-cancel-edit').addEventListener('click', function() { el('#edit-modal').className = 'modal'; });
-  el('#edit-modal-close').addEventListener('click', function() { el('#edit-modal').className = 'modal'; });
-  el('#edit-modal').addEventListener('click', function(e) { if (e.target.classList.contains('modal-backdrop')) el('#edit-modal').className = 'modal'; });
-  el('#edit-slug').addEventListener('input', function() { el('#edit-preview').textContent = origin() + route(el('#edit-prefix').value, el('#edit-slug').value.trim() || 'preview'); });
-  el('#edit-prefix').addEventListener('change', function() { el('#edit-preview').textContent = origin() + route(el('#edit-prefix').value, el('#edit-slug').value.trim() || 'preview'); });
-  el('#btn-copy').addEventListener('click', function() { var u = el('#result-url').dataset.shortUrl; if (u) copyText(u); });
-  el('#btn-open').addEventListener('click', function() { var u = el('#result-url').dataset.shortUrl; if (u) window.open(u, '_blank'); });
-  el('#btn-qr').addEventListener('click', function() { var u = el('#result-url').dataset.shortUrl; if (u) showQR(u); });
-  el('#modal-close').addEventListener('click', function() { el('#qr-modal').className = 'modal'; });
-  el('#qr-modal').addEventListener('click', function(e) { if (e.target.classList.contains('modal-backdrop')) el('#qr-modal').className = 'modal'; });
-  el('#route-home').addEventListener('click', function() { window.history.replaceState({}, '', '/'); location.reload(); });
+}
 
-  /* ===== INIT ===== */
-  autoLogin();
-  handleRoute();
-  window.addEventListener('popstate', handleRoute);
+function doLogin(){
+  var u=document.getElementById('login-user').value.trim();
+  var p=document.getElementById('login-pass').value;
+  if(!u||!p){toast('Enter credentials','error');return;}
+  log('Authenticating...','info');
+  xhr('POST','/api/auth',{username:u,password:p},function(err,data){
+    if(err){
+      log('Auth failed','error');
+      toast('Access denied','error');
+      var panel=document.querySelector('.login-panel');
+      if(panel){panel.style.animation='none';void panel.offsetHeight;panel.style.animation='shake 0.5s ease';}
+      return;
+    }
+    S.auth=true;S.user=data.user;S.token=data.token;saveToken();
+    log('Authenticated','success');
+    toast('Access granted','success');
+    loadLinks();
+    showScreen('dashboard');
+    log('Dashboard ready','success','dash');
+  });
+}
+
+function autoLogin(){
+  if(!S.token){showScreen('login');return;}
+  xhr('GET','/api/me',null,function(err,data){
+    if(err){S.token='';saveToken();showScreen('login');return;}
+    S.auth=true;S.user=data.user;
+    S.urls=Array.isArray(data.links)?data.links:[];
+    for(var i=0;i<S.urls.length;i++)S.urls[i].time=normTime(S.urls[i].time);
+    showScreen('dashboard');
+    toast('Welcome back','success');
+    log('Session restored','success','dash');
+    renderLinks();
+    updateStats();
+  });
+}
+
+function doLogout(){
+  S.auth=false;S.user=null;S.token='';S.urls=[];saveToken();
+  showScreen('login');
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('result-area').className='result-area';
+  toast('Logged out','info');
+}
+
+function createLink(){
+  var t=document.getElementById('url-input').value.trim();
+  if(!t){toast('Enter target URL','error');return;}
+  if(!/^https?:\/\//i.test(t))t='https://'+t;
+  var pr=document.getElementById('prefix-select').value;
+  var sl=document.getElementById('slug-input').value.trim()||rSlug(8);
+  var lb=document.getElementById('label-input').value.trim();
+  xhr('POST','/api/links',{target:t,prefix:pr,slug:sl,label:lb},function(err,data){
+    if(err){toast('Create failed: '+err.message,'error');return;}
+    var e=data.link;
+    e.time=normTime(e.time);
+    S.urls.unshift(e);
+    renderLinks();updateStats();
+    lastShort=e.short;
+    var ru=document.getElementById('result-url');
+    try{
+      var h=new URL(e.short).host;
+      var pl=e.route.replace(/^\//,'');
+      ru.innerHTML='<span class="url-domain">'+esc(h)+'/</span><span class="url-path">'+esc(pl.replace(/\/[^/]+$/,'/'))+'</span><span class="url-slug">'+esc(sl)+'</span>';
+    }catch(ex){ru.textContent=e.short;}
+    document.getElementById('result-time').textContent=new Date(e.time).toLocaleString();
+    document.getElementById('result-hash').textContent=e.hash||'';
+    document.getElementById('result-area').className='result-area show';
+    toast('URL created','success');
+    document.getElementById('url-input').value='';
+    document.getElementById('slug-input').value='';
+    document.getElementById('label-input').value='';
+  });
+}
+
+function doDelete(idx){
+  var link=S.urls[idx];
+  if(!link)return;
+  xhr('DELETE','/api/links/'+link.id,null,function(err){
+    if(err){toast('Delete failed','error');return;}
+    S.urls.splice(idx,1);
+    renderLinks();updateStats();
+    toast('Deleted','info');
+  });
+}
+
+function doClearAll(){
+  if(S.urls.length===0)return;
+  if(!confirm('Delete ALL links?'))return;
+  var done=0,total=S.urls.length,hasErr=false;
+  for(var i=0;i<S.urls.length;i++){
+    (function(id){
+      xhr('DELETE','/api/links/'+id,null,function(err){
+        done++;
+        if(err)hasErr=true;
+        if(done>=total){
+          S.urls=[];renderLinks();updateStats();
+          document.getElementById('result-area').className='result-area';
+          toast(hasErr?'Partial clear':'All cleared','info');
+        }
+      });
+    })(S.urls[i].id);
+  }
+}
+
+function showEdit(idx){
+  var e=S.urls[idx];
+  if(!e)return;
+  document.getElementById('edit-id').value=idx;
+  document.getElementById('edit-target').value=e.target||'';
+  document.getElementById('edit-slug').value=e.slug||'';
+  document.getElementById('edit-prefix').value=e.prefix||'';
+  document.getElementById('edit-label').value=e.label||'';
+  document.getElementById('edit-preview').textContent=e.short||'';
+  document.getElementById('edit-modal').className='modal active';
+}
+
+function saveEdit(){
+  var idx=parseInt(document.getElementById('edit-id').value,10);
+  var link=S.urls[idx];
+  if(!link)return;
+  var target=document.getElementById('edit-target').value.trim();
+  var slugVal=document.getElementById('edit-slug').value.trim();
+  var prefix=document.getElementById('edit-prefix').value;
+  var label=document.getElementById('edit-label').value.trim();
+  if(!target){toast('Target required','error');return;}
+  if(!/^https?:\/\//i.test(target))target='https://'+target;
+  if(!slugVal){toast('Slug required','error');return;}
+  xhr('PUT','/api/links/'+link.id,{target:target,prefix:prefix,slug:slugVal,label:label},function(err,data){
+    if(err){toast('Update failed: '+err.message,'error');return;}
+    data.link.time=normTime(data.link.time);
+    S.urls[idx]=data.link;
+    renderLinks();updateStats();
+    document.getElementById('edit-modal').className='modal';
+    toast('Updated','success');
+  });
+}
+
+function copyText(txt){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast('Copied','success');}).catch(function(){fallbackCopy(txt);});
+  }else{fallbackCopy(txt);}
+}
+function fallbackCopy(txt){
+  var t=document.createElement('textarea');t.value=txt;t.style.cssText='position:fixed;left:-9999px';
+  document.body.appendChild(t);t.select();
+  try{document.execCommand('copy');toast('Copied','success');}catch(e){toast('Copy failed','error');}
+  document.body.removeChild(t);
+}
+
+function showQR(url){
+  var mc=document.getElementById('qr-canvas-container');
+  var mt=document.getElementById('modal-url-text');
+  mc.innerHTML='';mt.textContent=url;
+  var sz=200;var cv=document.createElement('canvas');cv.width=sz;cv.height=sz;
+  var cx=cv.getContext('2d');
+  cx.fillStyle='#fff';cx.fillRect(0,0,sz,sz);
+  cx.fillStyle='#000';
+  var cs=sz/25;
+  var pat=[];var ii,jj;
+  for(ii=0;ii<25;ii++){pat[ii]=[];for(jj=0;jj<25;jj++)pat[ii][jj]=Math.random()>0.55?1:0;}
+  function finder(x,y){for(var a=0;a<7;a++)for(var b=0;b<7;b++){if(a===0||a===6||b===0||b===6||(a>=2&&a<=4&&b>=2&&b<=4))pat[x+a][y+b]=1;else pat[x+a][y+b]=0;}}
+  finder(0,0);finder(18,0);finder(0,18);
+  for(var i=0;i<25;i++)for(var j=0;j<25;j++)if(pat[i][j])cx.fillRect(j*cs,i*cs,cs,cs);
+  cx.fillStyle='#333';cx.font='8px monospace';cx.textAlign='center';
+  cx.fillText(url.length>35?url.slice(0,35)+'...':url,sz/2,sz-4);
+  mc.appendChild(cv);
+  document.getElementById('qr-modal').className='modal active';
+}
+
+function closeEditModal(){document.getElementById('edit-modal').className='modal';}
+function closeQRModal(){document.getElementById('qr-modal').className='modal';}
+
+document.getElementById('btn-login').addEventListener('click',doLogin);
+document.getElementById('login-user').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+document.getElementById('toggle-pass').addEventListener('click',function(){
+  var inp=document.getElementById('login-pass');var icon=this.querySelector('i');
+  if(inp.type==='password'){inp.type='text';icon.className='fa-solid fa-eye-slash';}
+  else{inp.type='password';icon.className='fa-solid fa-eye';}
+});
+document.getElementById('btn-create').addEventListener('click',createLink);
+document.getElementById('btn-random').addEventListener('click',function(){document.getElementById('slug-input').value=rSlug(10);});
+document.getElementById('btn-clear').addEventListener('click',doClearAll);
+document.getElementById('btn-logout').addEventListener('click',doLogout);
+document.getElementById('btn-save-edit').addEventListener('click',saveEdit);
+document.getElementById('btn-cancel-edit').addEventListener('click',closeEditModal);
+document.getElementById('edit-modal-close').addEventListener('click',closeEditModal);
+document.getElementById('edit-modal').addEventListener('click',function(e){if(e.target.classList.contains('modal-backdrop'))closeEditModal();});
+document.getElementById('modal-close').addEventListener('click',closeQRModal);
+document.getElementById('qr-modal').addEventListener('click',function(e){if(e.target.classList.contains('modal-backdrop'))closeQRModal();});
+document.getElementById('route-home').addEventListener('click',function(){window.location.href='/';});
+
+document.getElementById('edit-slug').addEventListener('input',function(){document.getElementById('edit-preview').textContent=window.location.origin+mkRoute(document.getElementById('edit-prefix').value,document.getElementById('edit-slug').value.trim()||'preview');});
+document.getElementById('edit-prefix').addEventListener('change',function(){document.getElementById('edit-preview').textContent=window.location.origin+mkRoute(document.getElementById('edit-prefix').value,document.getElementById('edit-slug').value.trim()||'preview');});
+
+document.getElementById('btn-copy').addEventListener('click',function(){if(lastShort)copyText(lastShort);});
+document.getElementById('btn-open').addEventListener('click',function(){if(lastShort)window.open(lastShort,'_blank');});
+document.getElementById('btn-qr').addEventListener('click',function(){if(lastShort)showQR(lastShort);});
+
+document.getElementById('url-list').addEventListener('click',function(e){
+  var btn=e.target.closest('.url-item-btn');
+  if(!btn)return;
+  var act=btn.getAttribute('data-act');
+  var i=parseInt(btn.getAttribute('data-i'),10);
+  if(isNaN(i))return;
+  var link=S.urls[i];
+  if(!link)return;
+  if(act==='copy')copyText(link.short);
+  else if(act==='open')window.open(link.short,'_blank');
+  else if(act==='edit')showEdit(i);
+  else if(act==='qr')showQR(link.short);
+  else if(act==='del'){
+    if(confirm('Delete this link?'))doDelete(i);
+  }
+});
+
+var cursorGlow=document.getElementById('cursor-glow');
+document.addEventListener('mousemove',function(e){cursorGlow.style.left=e.clientX+'px';cursorGlow.style.top=e.clientY+'px';});
+
+var pc=document.getElementById('particles-layer');
+var colors=['#00e5ff','#b967ff','#ff2d78','#00ff9d'];
+for(var pi=0;pi<35;pi++){
+  var p=document.createElement('div');
+  p.className='particle';
+  var sz=Math.random()*3+1;
+  var c=colors[Math.floor(Math.random()*colors.length)];
+  p.style.width=sz+'px';p.style.height=sz+'px';
+  p.style.background=c;p.style.boxShadow='0 0 '+sz*2+'px '+c;
+  p.style.left=Math.random()*100+'%';
+  p.style.setProperty('--po',String(Math.random()*0.3+0.15));
+  p.style.animation='pFloat '+(Math.random()*12+8)+'s ease-in-out '+(Math.random()*10)+'s infinite';
+  pc.appendChild(p);
+}
+
+var bgC=document.getElementById('bg-canvas');
+var bgX=bgC.getContext('2d');
+function resizeBG(){bgC.width=window.innerWidth;bgC.height=window.innerHeight;}
+resizeBG();window.addEventListener('resize',resizeBG);
+(function animBG(){
+  bgX.fillStyle='rgba(3,3,5,0.15)';bgX.fillRect(0,0,bgC.width,bgC.height);
+  for(var i=0;i<2;i++){
+    var x=Math.random()*bgC.width;
+    var y=Math.random()*bgC.height;
+    var r=Math.random()*1.5+0.3;
+    var c=colors[Math.floor(Math.random()*colors.length)];
+    bgX.beginPath();bgX.arc(x,y,r,0,Math.PI*2);
+    bgX.fillStyle=c;bgX.globalAlpha=0.12;bgX.fill();bgX.globalAlpha=1;
+  }
+  requestAnimationFrame(animBG);
+})();
+
+autoLogin();
 })();
 </script>
 </body>
