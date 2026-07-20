@@ -704,10 +704,11 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     opts = opts || {};
     cb = cb || function() {};
     var xhr = new XMLHttpRequest();
-    var method = opts.method || 'GET';
-    xhr.open(method, path, true);
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    if (opts.json) {
+    var m = opts.method || 'GET';
+    xhr.open(m, path, true);
+    var bodyStr = null;
+    if (opts.body) {
+      bodyStr = typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body);
       xhr.setRequestHeader('Content-Type', 'application/json');
     }
     if (_s.token) {
@@ -715,20 +716,13 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     }
     xhr.onreadystatechange = function() {
       if (xhr.readyState !== 4) return;
-      var data = {};
-      try { data = xhr.responseText ? JSON.parse(xhr.responseText) : {}; } catch (e) { data = { raw: xhr.responseText }; }
-      if (xhr.status >= 200 && xhr.status < 300) {
-        cb(null, data);
-      } else {
-        cb(new Error(data.error || 'Request failed'), data);
-      }
+      var d = {};
+      try { d = xhr.responseText ? JSON.parse(xhr.responseText) : {}; } catch (e) { d = {}; }
+      if (xhr.status >= 200 && xhr.status < 300) { cb(null, d); }
+      else { cb(new Error(d.error || 'Request failed'), d); }
     };
     xhr.onerror = function() { cb(new Error('Network error')); };
-    if (opts.json) {
-      xhr.send(typeof opts.json === 'string' ? opts.json : JSON.stringify(opts.json));
-    } else {
-      xhr.send(null);
-    }
+    xhr.send(bodyStr);
   }
 
   function _loadLinks() {
@@ -754,9 +748,27 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
       return;
     }
     var body = JSON.stringify({ username: u, password: p });
-    _api('/api/auth', { method: 'POST', json: body }, function(err, data) {
-      if (err) {
-        _log('Auth failed: ' + err.message, 'error');
+    var b64 = btoa(unescape(encodeURIComponent(body)));
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/auth', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('X-Auth-Data', b64);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) return;
+      var d = {};
+      try { d = xhr.responseText ? JSON.parse(xhr.responseText) : {}; } catch (e) { d = {}; }
+      if (xhr.status >= 200 && xhr.status < 300 && d.token) {
+        _s.auth = true;
+        _s.user = d.user;
+        _s.token = d.token;
+        _saveTk();
+        _log('Authentication successful', 'success');
+        _toast('Access granted', 'success');
+        _loadLinks();
+        _showScreen('dashboard');
+        _log('Dashboard loaded', 'success', 'dash');
+      } else {
+        _log('Auth failed: ' + (d.error || 'Unknown error'), 'error');
         _toast('Invalid credentials', 'error');
         var pn = $('.login-panel');
         if (pn) {
@@ -764,18 +776,10 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
           pn.offsetHeight;
           pn.style.animation = 'panelEnter 0.6s ease, shake 0.6s ease';
         }
-        return;
       }
-      _s.auth = true;
-      _s.user = data.user;
-      _s.token = data.token;
-      _saveTk();
-      _log('Authentication successful', 'success');
-      _toast('Access granted', 'success');
-      _loadLinks();
-      _showScreen('dashboard');
-      _log('Dashboard loaded', 'success', 'dash');
-    });
+    };
+    xhr.onerror = function() { _toast('Network error', 'error'); _log('Network error', 'error'); };
+    xhr.send(body);
   }
 
   function _autoLogin() {
@@ -859,7 +863,7 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     }
     _api('/api/links', {
       method: 'POST',
-      json: { target: t, prefix: pr, slug: sl, label: li.value.trim() }
+      body: { target: t, prefix: pr, slug: sl, label: li.value.trim() }
     }, function(err, data) {
       if (err) {
         _toast('Could not create link', 'error');
@@ -914,7 +918,7 @@ body { font-family: var(--font-sans); background: var(--bg-void); color: var(--t
     if (!slug) { _toast('Slug cannot be empty', 'error'); return; }
     _api('/api/links/' + id, {
       method: 'PUT',
-      json: { target: target, prefix: prefix, slug: slug, label: label }
+      body: { target: target, prefix: prefix, slug: slug, label: label }
     }, function(err, data) {
       if (err) {
         _toast('Could not update link', 'error');
