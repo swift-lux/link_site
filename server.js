@@ -124,26 +124,36 @@ function isApiEndpoint(pathname) {
   return pathname === '/api/auth' || pathname === '/api/me' || pathname === '/api/links' || /^\/api\/links\/\d+$/.test(pathname);
 }
 
-// ====== ДОБАВЛЕНА ФУНКЦИЯ ======
 function isReservedRoute(route) {
   const reserved = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/404', '/favicon.svg', '/index.html'];
   return reserved.some(r => route === r || route.startsWith(r + '/'));
 }
 
 function sendJson(res, status, payload) {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  console.log(`[RESPONSE] ${status}:`, payload);
+  res.writeHead(status, { 
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  });
   res.end(JSON.stringify(payload));
 }
 
 function sendHtml(res, status, html) {
-  res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.writeHead(status, { 
+    'Content-Type': 'text/html; charset=utf-8',
+    'Access-Control-Allow-Origin': '*'
+  });
   res.end(html);
 }
 
 function sendFile(res, status, filePath, contentType) {
   try {
     const content = fs.readFileSync(filePath);
-    res.writeHead(status, { 'Content-Type': contentType });
+    res.writeHead(status, { 
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*'
+    });
     res.end(content);
   } catch (error) {
     send404(res);
@@ -160,6 +170,7 @@ function parseRequestBody(req, callback) {
   req.on('data', (chunk) => { body += chunk; });
   req.on('end', () => {
     try {
+      console.log('[BODY]', body);
       callback(null, body ? JSON.parse(body) : {});
     } catch (error) {
       callback(error);
@@ -169,19 +180,23 @@ function parseRequestBody(req, callback) {
 
 const server = http.createServer((req, res) => {
   cleanupSessions();
+  
   const requestUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = decodeURIComponent(requestUrl.pathname || '/');
   const method = req.method;
   const protocol = (req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim() || 'http';
   const host = req.headers.host || 'localhost:' + PORT;
-
-  // CORS headers для локальной разработки
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
+  console.log(`\n[REQUEST] ${method} ${pathname}`);
+  console.log('[HEADERS]', req.headers);
+
+  // CORS preflight
   if (method === 'OPTIONS') {
-    res.writeHead(204);
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    });
     return res.end();
   }
 
@@ -197,21 +212,37 @@ const server = http.createServer((req, res) => {
   }
 
   if (pathname.startsWith('/api/')) {
+    // Auth endpoint - NO token required
     if (pathname === '/api/auth' && method === 'POST') {
       return parseRequestBody(req, (error, payload) => {
-        if (error) return sendJson(res, 400, { error: 'Invalid JSON' });
+        if (error) {
+          console.log('[AUTH ERROR] Invalid JSON:', error.message);
+          return sendJson(res, 400, { error: 'Invalid JSON' });
+        }
+        console.log('[AUTH PAYLOAD]', payload);
         const user = authenticate(payload.username || '', payload.password || '');
-        if (!user) return sendJson(res, 401, { error: 'Unauthorized' });
+        if (!user) {
+          console.log('[AUTH FAILED] Invalid credentials for:', payload.username);
+          return sendJson(res, 401, { error: 'Unauthorized' });
+        }
         const token = crypto.randomBytes(24).toString('hex');
         db.sessions.push({ token, user: user.username, expiresAt: now() + 1000 * 60 * 60 * 24 * 7 });
         saveDatabase(db);
+        console.log('[AUTH SUCCESS] User:', user.username, 'Token:', token.slice(0, 16) + '...');
         return sendJson(res, 200, { token, user: { username: user.username, name: user.name } });
       });
     }
 
+    // All other API endpoints require token
     const authHeader = String(req.headers.authorization || '').trim();
+    console.log('[AUTH HEADER]', authHeader ? authHeader.slice(0, 20) + '...' : 'EMPTY');
+    
     const session = findSession(authHeader);
-    if (!session) return sendJson(res, 401, { error: 'Unauthorized' });
+    if (!session) {
+      console.log('[AUTH CHECK FAILED] No valid session');
+      return sendJson(res, 401, { error: 'Unauthorized' });
+    }
+    console.log('[AUTH CHECK OK] User:', session.user);
 
     if (pathname === '/api/me' && method === 'GET') {
       return sendJson(res, 200, { 
@@ -234,8 +265,6 @@ const server = http.createServer((req, res) => {
         if (db.links.some((link) => link.route === route)) {
           return sendJson(res, 409, { error: 'Route already in use' });
         }
-        const protocol = (req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim() || 'http';
-        const host = req.headers.host || 'localhost:' + PORT;
         const entry = {
           id: nextId(),
           owner: session.user,
@@ -267,8 +296,6 @@ const server = http.createServer((req, res) => {
         if (db.links.some((item) => item.id !== link.id && item.route === route)) {
           return sendJson(res, 409, { error: 'Route already in use' });
         }
-        const protocol = (req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim() || 'http';
-        const host = req.headers.host || 'localhost:' + PORT;
         link.target = payload.target;
         link.prefix = payload.prefix || '';
         link.slug = payload.slug || '';
@@ -317,4 +344,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`SVCODE server running on http://127.0.0.1:${PORT}`);
+  console.log('Default user: svcode_npms / vectorpro9');
 });
