@@ -1,6 +1,6 @@
 '<div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=28&duration=3000&pause=800&color=00E5FF&center=true&vCenter=true&width=500&lines=SV.CODE+URL+VAULT;Cryptographic+Short+Link+Engine;Military-Grade+Security" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=28&duration=3000&pause=800&color=00E5FF&center=true&vCenter=true&width=500&lines=SVCODE+URL+VAULT;Cryptographic+Short+Link+Engine;Military-Grade+Security" alt="Typing SVG" />
 
 <br>
 
@@ -19,7 +19,7 @@
 
 ## ⚡ Overview
 
-**SV.CODE URL VAULT** — это профессиональный, самодостаточный (single-file) генератор коротких URL с военным уровнем безопасности. Весь интерфейс построен на чистом HTML/CSS/JS без внешних зависимостей (кроме Font Awesome CDN).
+**SVCODE URL VAULT** — это профессиональный, самодостаточный (single-file) генератор коротких URL с военным уровнем безопасности. Весь интерфейс построен на чистом HTML/CSS/JS без внешних зависимостей (кроме Font Awesome CDN).
 
 > 🔒 **Zero Backend Required** — вся криптография выполняется клиентской стороной через Web Crypto API.
 
@@ -111,7 +111,7 @@ svcode_url_vault.html          # Single self-contained file
 │   ├── Noise + Scanline Overlays
 │   ├── Cursor Glow Effect
 │   │
-│   ├── Login Screen (SV.CODE branded)
+│   ├── Login Screen (SVCODE branded)
 │   │   ├── SVG Animated Logo
 │   │   ├── Credential Inputs
 │   │   ├── Security Badges
@@ -261,8 +261,8 @@ _sessDur: 3600000  // 1 hour in milliseconds
 
 ```
 ┌─────────────────────────────────────────┐
-│  SV.CODE URL VAULT                      │
-│  Copyright (c) 2026 SV.CODE             │
+│  SVCODE URL VAULT                      │
+│  Copyright (c) 2026 SVCODE             │
 │                                         │
 │  All Rights Reserved.                   │
 │  Proprietary Software.                  │
