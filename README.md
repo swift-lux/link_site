@@ -64,14 +64,14 @@
 
 ```bash
 # Clone or download the single HTML file
-git clone https://github.com/swift-lux/url-vault.git
+git clone https://github.com/swift-lux/link_site.git
 
 # Open directly in browser (no server needed)
-open svcode_url_vault.html
+open index.html
 
 # Or serve locally
-python3 -m http.server 8080
-# Navigate to http://localhost:8080
+node server.js
+# Navigate to http://localhost:3000
 ```
 
 ---
@@ -175,14 +175,6 @@ function secureRandom(length = 8) {
 const shortUrl = `domain.com/${prefix}${slug}`;
 // With your domain:
 const shortUrl = `go.yoursite.com/${prefix}${slug}`;
-```
-
-### Change Credentials
-
-```javascript
-// In the auth function, replace:
-const eu = await _0xsha('svcode_npms' + _0xsec._salt + _0xsec._pepper);
-const ep = await _0xsha('vectorpro9' + _0xsec._salt + _0xsec._pepper);
 ```
 
 ### Change Session Duration
