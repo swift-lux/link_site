@@ -124,6 +124,12 @@ function isApiEndpoint(pathname) {
   return pathname === '/api/auth' || pathname === '/api/me' || pathname === '/api/links' || /^\/api\/links\/\d+$/.test(pathname);
 }
 
+// ====== ДОБАВЛЕНА ФУНКЦИЯ ======
+function isReservedRoute(route) {
+  const reserved = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/404', '/favicon.svg', '/index.html'];
+  return reserved.some(r => route === r || route.startsWith(r + '/'));
+}
+
 function sendJson(res, status, payload) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(payload));
@@ -169,6 +175,16 @@ const server = http.createServer((req, res) => {
   const protocol = (req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim() || 'http';
   const host = req.headers.host || 'localhost:' + PORT;
 
+  // CORS headers для локальной разработки
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (method === 'OPTIONS') {
+    res.writeHead(204);
+    return res.end();
+  }
+
   if (pathname.startsWith('/api/') && !isApiEndpoint(pathname)) {
     const redirectLink = db.links.find((link) => link.route === pathname);
     if (redirectLink) {
@@ -198,7 +214,10 @@ const server = http.createServer((req, res) => {
     if (!session) return sendJson(res, 401, { error: 'Unauthorized' });
 
     if (pathname === '/api/me' && method === 'GET') {
-      return sendJson(res, 200, { user: { username: session.user, name: findUser(session.user).name }, links: normalizeLinkArray(getUserLinks(session.user), host, protocol) });
+      return sendJson(res, 200, { 
+        user: { username: session.user, name: findUser(session.user).name }, 
+        links: normalizeLinkArray(getUserLinks(session.user), host, protocol) 
+      });
     }
 
     if (pathname === '/api/links' && method === 'GET') {
