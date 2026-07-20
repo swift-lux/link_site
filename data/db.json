@@ -15,38 +15,5 @@
       "exp": 1785153242602
     }
   ],
-  "links": [
-    {
-      "id": "178454844265863873",
-      "owner": "svcode_npms",
-      "target": "https://google.com",
-      "prefix": "",
-      "slug": "testlink",
-      "route": "/testlink",
-      "short": "http://localhost:3000/testlink",
-      "label": "Test",
-      "hash": "a88ccef6",
-      "time": "2026-07-20T11:54:02.658Z",
-      "clicks": 1,
-      "lastUsed": "2026-07-20T11:54:02.689Z",
-      "created": 1784548442658,
-      "hidden": false
-    },
-    {
-      "id": "178454844267788534",
-      "owner": "svcode_npms",
-      "target": "https://github.com",
-      "prefix": "go/",
-      "slug": "gh",
-      "route": "/go/gh",
-      "short": "http://localhost:3000/go/gh",
-      "label": "GitHub",
-      "hash": "9b0ef503",
-      "time": "2026-07-20T11:54:02.677Z",
-      "clicks": 1,
-      "lastUsed": "2026-07-20T11:54:02.781Z",
-      "created": 1784548442677,
-      "hidden": false
-    }
-  ]
+  "links": []
 }
