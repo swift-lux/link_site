@@ -58,27 +58,13 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Credential Hashing Flow
-
-```
-Input: "svcode_npms" + "vectorpro9"
-   ↓
-Salt:  "SV_VAULT_2026_X9K2M7P4Q1_SECURE_SALT_VECTOR"
-Pepper: "PRO_NPMS_2026_HIDDEN_PEPPER_LAYER"
-   ↓
-SHA-256(username + salt + pepper)  →  stored hash
-SHA-256(password + salt + pepper)  →  stored hash
-   ↓
-Runtime comparison via Web Crypto API
-```
-
 ---
 
 ## 🚀 Quick Start
 
 ```bash
 # Clone or download the single HTML file
-git clone https://github.com/svcode/url-vault.git
+git clone https://github.com/swift-lux/url-vault.git
 
 # Open directly in browser (no server needed)
 open svcode_url_vault.html
@@ -86,13 +72,6 @@ open svcode_url_vault.html
 # Or serve locally
 python3 -m http.server 8080
 # Navigate to http://localhost:8080
-```
-
-### Default Credentials
-
-```
-Identity:    svcode_npms
-Passphrase:  vectorpro9
 ```
 
 ---
