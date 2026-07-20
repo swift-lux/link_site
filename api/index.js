@@ -1,0 +1,299 @@
+var fs = require('fs');
+var path = require('path');
+var crypto = require('crypto');
+
+var ROOT = path.join(__dirname, '..');
+var TMP_DB = '/tmp/svcode_db.json';
+var HTML_FILE = path.join(ROOT, 'index.html');
+var ICO_FILE = path.join(ROOT, 'favicon.svg');
+
+var CREDENTIALS = { username: 'svcode_npms', name: 'SVCODE Admin', password: 'vectorpro9' };
+
+var db = null;
+
+function hash(v) { return crypto.createHash('sha256').update(String(v)).digest('hex'); }
+
+function initDB() {
+  try {
+    var raw = fs.readFileSync(TMP_DB, 'utf8');
+    var parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.users) && parsed.users.length > 0) {
+      db = parsed;
+      return;
+    }
+  } catch(e) {}
+  db = {
+    users: [{ id: 1, username: CREDENTIALS.username, name: CREDENTIALS.name, passwordHash: hash(CREDENTIALS.password) }],
+    sessions: [],
+    links: []
+  };
+  saveDB();
+}
+
+function saveDB() {
+  try { fs.writeFileSync(TMP_DB, JSON.stringify(db)); } catch(e) {}
+}
+
+function safeEqual(a, b) {
+  var x = Buffer.from(String(a));
+  var y = Buffer.from(String(b));
+  if (x.length !== y.length) return false;
+  try { return crypto.timingSafeEqual(x, y); } catch(e) { return false; }
+}
+
+function jsonRes(res, code, obj) {
+  var s = JSON.stringify(obj);
+  res.writeHead(code, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+  });
+  res.end(s);
+}
+
+function fileRes(res, fp, ct) {
+  try {
+    var d = fs.readFileSync(fp);
+    res.writeHead(200, { 'Content-Type': ct, 'Access-Control-Allow-Origin': '*' });
+    res.end(d);
+  } catch(e) {
+    jsonRes(res, 404, { error: 'Not found' });
+  }
+}
+
+function readBody(req) {
+  return new Promise(function(resolve) {
+    var chunks = [];
+    req.on('data', function(c) { chunks.push(c); });
+    req.on('end', function() {
+      var raw = Buffer.concat(chunks).toString('utf8');
+      if (!raw) return resolve({});
+      try { return resolve(JSON.parse(raw)); } catch(e) {}
+      try {
+        var p = {};
+        raw.split('&').forEach(function(pair) {
+          var eq = pair.indexOf('=');
+          if (eq > 0) p[decodeURIComponent(pair.substring(0, eq))] = decodeURIComponent(pair.substring(eq + 1));
+        });
+        if (Object.keys(p).length > 0) return resolve(p);
+      } catch(e2) {}
+      resolve({ _raw: raw });
+    });
+    req.on('error', function() { resolve({}); });
+  });
+}
+
+function mkRoute(prefix, slug) {
+  var p = String(prefix || '').trim().replace(/^\/+|\/+$/g, '');
+  var s = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
+  if (!s) return '/';
+  return p ? '/' + p + '/' + s : '/' + s;
+}
+
+function mkShort(host, prefix, slug, proto) {
+  return (proto || 'https') + '://' + host + mkRoute(prefix, slug);
+}
+
+function uid() { return Date.now() + '' + Math.floor(Math.random() * 100000); }
+
+function cleanSessions() {
+  if (!db) return;
+  var now = Date.now();
+  db.sessions = db.sessions.filter(function(s) { return s.exp > now; });
+}
+
+var rateAttempts = {};
+function rateLimit(ip) {
+  var k = String(ip);
+  var now = Date.now();
+  var a = rateAttempts[k];
+  if (!a || now - a.t > 900000) { rateAttempts[k] = { n: 1, t: now }; return true; }
+  a.n++;
+  if (a.n > 15) return false;
+  return true;
+}
+
+function findUser(name) {
+  for (var i = 0; i < db.users.length; i++) {
+    if (db.users[i].username === name) return db.users[i];
+  }
+  return null;
+}
+
+function findSession(tok) {
+  if (!tok || tok.length < 10) return null;
+  var now = Date.now();
+  for (var i = 0; i < db.sessions.length; i++) {
+    if (db.sessions[i].token === tok && db.sessions[i].exp > now) return db.sessions[i];
+  }
+  return null;
+}
+
+function userLinks(owner) {
+  var result = [];
+  for (var i = 0; i < db.links.length; i++) {
+    if (db.links[i].owner === owner) result.push(db.links[i]);
+  }
+  return result.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+}
+
+var RESERVED = ['/', '/api', '/api/auth', '/api/me', '/api/links', '/favicon.svg', '/index.html'];
+
+function isReserved(r) {
+  for (var i = 0; i < RESERVED.length; i++) {
+    if (r === RESERVED[i] || r.indexOf(RESERVED[i] + '/') === 0) return true;
+  }
+  return false;
+}
+
+function isAPI(p) {
+  return p === '/api/auth' || p === '/api/me' || p === '/api/links' || /^\/api\/links\/\d+$/.test(p);
+}
+
+module.exports = async function(req, res) {
+  if (!db) initDB();
+  cleanSessions();
+
+  var url;
+  try { url = new URL(req.url, 'http://' + (req.headers.host || 'localhost')); }
+  catch(e) { url = { pathname: '/' }; }
+  var pn = decodeURIComponent(url.pathname || '/');
+  var method = req.method || 'GET';
+  var proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  var host = req.headers.host || 'localhost';
+
+  if (method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      'Access-Control-Max-Age': '86400'
+    });
+    return res.end();
+  }
+
+  // === AUTH ===
+  if (pn === '/api/auth' && method === 'POST') {
+    var ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || '';
+    if (!rateLimit(ip)) return jsonRes(res, 429, { error: 'Too many attempts' });
+    var body = await readBody(req);
+    var u = String(body.username || body.user || '').trim();
+    var p = String(body.password || body.pass || '');
+    if (!u || !p) return jsonRes(res, 401, { error: 'Unauthorized' });
+    var user = findUser(u);
+    if (!user || !user.passwordHash) return jsonRes(res, 401, { error: 'Unauthorized' });
+    if (!safeEqual(hash(p), user.passwordHash)) return jsonRes(res, 401, { error: 'Unauthorized' });
+    var tok = crypto.randomBytes(24).toString('hex');
+    db.sessions.push({ token: tok, user: user.username, exp: Date.now() + 604800000 });
+    saveDB();
+    return jsonRes(res, 200, { token: tok, user: { username: user.username, name: user.name } });
+  }
+
+  // All other /api/ routes need auth
+  if (pn.indexOf('/api/') === 0) {
+    var tok = String(req.headers.authorization || '').trim();
+    var sess = findSession(tok);
+    if (!sess) return jsonRes(res, 401, { error: 'Unauthorized' });
+    var owner = sess.user;
+
+    if (!isAPI(pn)) {
+      for (var i = 0; i < db.links.length; i++) {
+        if (db.links[i].route === pn) {
+          db.links[i].clicks = (db.links[i].clicks || 0) + 1;
+          db.links[i].lastUsed = new Date().toISOString();
+          saveDB();
+          res.writeHead(302, { Location: db.links[i].target });
+          return res.end();
+        }
+      }
+    }
+
+    if (pn === '/api/me' && method === 'GET') {
+      var u = findUser(owner);
+      var links = userLinks(owner);
+      for (var i = 0; i < links.length; i++) links[i] = Object.assign({}, links[i], { short: mkShort(host, links[i].prefix, links[i].slug, proto) });
+      return jsonRes(res, 200, { user: { username: owner, name: u ? u.name : owner }, links: links });
+    }
+
+    if (pn === '/api/links' && method === 'GET') {
+      var links = userLinks(owner);
+      for (var i = 0; i < links.length; i++) links[i] = Object.assign({}, links[i], { short: mkShort(host, links[i].prefix, links[i].slug, proto) });
+      return jsonRes(res, 200, { links: links });
+    }
+
+    if (pn === '/api/links' && method === 'POST') {
+      var b = await readBody(req);
+      var target = String(b.target || '').trim();
+      if (!target) return jsonRes(res, 400, { error: 'Target required' });
+      var route = mkRoute(b.prefix, b.slug);
+      if (isReserved(route)) return jsonRes(res, 400, { error: 'Reserved route' });
+      for (var i = 0; i < db.links.length; i++) {
+        if (db.links[i].route === route) return jsonRes(res, 409, { error: 'Route exists' });
+      }
+      var entry = {
+        id: uid(), owner: owner, target: target,
+        prefix: String(b.prefix || '').trim(), slug: String(b.slug || '').trim(),
+        route: route, short: mkShort(host, b.prefix, b.slug, proto),
+        label: String(b.label || '').trim(),
+        hash: crypto.randomBytes(4).toString('hex'),
+        time: new Date().toISOString(), clicks: 0, lastUsed: null, created: Date.now()
+      };
+      db.links.push(entry);
+      saveDB();
+      return jsonRes(res, 200, { link: entry });
+    }
+
+    var putMatch = pn.match(/^\/api\/links\/(\d+)$/);
+    if (putMatch && method === 'PUT') {
+      var b = await readBody(req);
+      var id = putMatch[1];
+      var link = null;
+      for (var i = 0; i < db.links.length; i++) {
+        if (db.links[i].id === id && db.links[i].owner === owner) { link = db.links[i]; break; }
+      }
+      if (!link) return jsonRes(res, 404, { error: 'Not found' });
+      var route = mkRoute(b.prefix, b.slug);
+      for (var i = 0; i < db.links.length; i++) {
+        if (db.links[i].id !== id && db.links[i].route === route) return jsonRes(res, 409, { error: 'Route exists' });
+      }
+      link.target = String(b.target || link.target).trim();
+      link.prefix = String(b.prefix || '').trim();
+      link.slug = String(b.slug || '').trim();
+      link.route = route;
+      link.short = mkShort(host, b.prefix, b.slug, proto);
+      link.label = String(b.label || '').trim();
+      link.updated = Date.now();
+      saveDB();
+      return jsonRes(res, 200, { link: link });
+    }
+
+    var delMatch = pn.match(/^\/api\/links\/(\d+)$/);
+    if (delMatch && method === 'DELETE') {
+      var id = delMatch[1];
+      db.links = db.links.filter(function(l) { return !(l.id === id && l.owner === owner); });
+      saveDB();
+      return jsonRes(res, 200, { ok: true });
+    }
+
+    return jsonRes(res, 404, { error: 'Not found' });
+  }
+
+  // Static files
+  if (pn === '/favicon.svg') return fileRes(res, ICO_FILE, 'image/svg+xml');
+  if (pn === '/' || pn === '/index.html') return fileRes(res, HTML_FILE, 'text/html; charset=utf-8');
+
+  // Short link redirect (no auth needed)
+  for (var i = 0; i < db.links.length; i++) {
+    if (db.links[i].route === pn) {
+      db.links[i].clicks = (db.links[i].clicks || 0) + 1;
+      db.links[i].lastUsed = new Date().toISOString();
+      saveDB();
+      res.writeHead(302, { Location: db.links[i].target });
+      return res.end();
+    }
+  }
+
+  // Fallback to index.html for SPA routing
+  return fileRes(res, HTML_FILE, 'text/html; charset=utf-8');
+};
