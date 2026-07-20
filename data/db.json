@@ -22,23 +22,12 @@
       "token": "ab3df1dd6df343312d0dd59f4ad0bdd5c5706df60b57a19a",
       "user": "svcode_npms",
       "expiresAt": 1785114044372
+    },
+    {
+      "token": "c2ed1aaf738eb4da7a0a59c52b866d00f3538fe25361a469",
+      "user": "svcode_npms",
+      "expiresAt": 1785140051463
     }
   ],
-  "links": [
-    {
-      "id": 1784506970315,
-      "owner": "svcode_npms",
-      "target": "https://tapy.me/svcode",
-      "prefix": "api",
-      "slug": "svcode",
-      "route": "/api/n3cARLJ3",
-      "short": "http://127.0.0.1:4100/api/svcode",
-      "label": "server",
-      "hash": "ea6ccf72",
-      "time": "2026-07-20T00:22:32.444Z",
-      "clicks": 1,
-      "lastUsed": "2026-07-20T01:00:44.377Z",
-      "createdAt": 1784506952444
-    }
-  ]
+  "links": []
 }

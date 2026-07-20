@@ -344,5 +344,4 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`SVCODE server running on http://127.0.0.1:${PORT}`);
-  console.log('Default user: svcode_npms / vectorpro9');
 });
